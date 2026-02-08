@@ -1,6 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server'
 import crypto from 'crypto'
 
+// Single Google Drive link for each bundle
+const DRIVE_LINKS = {
+  // Class 10th Science + Maths - Single Link
+  science_maths: 'https://drive.google.com/drive/folders/1_sOXS7x4878MzcbX2sTJ9s2Wxymd8iHY?usp=sharing',
+  
+  // PCM Bundle (Engineering) - Single Link
+  pcm: 'https://drive.google.com/drive/folders/1ke2mlyGd2GIAAQoAePAJg4M4MyaGGb8z?usp=sharing',
+  
+  // PCB Bundle (Medical) - Single Link
+  pcb: 'https://drive.google.com/drive/folders/1BNNknDtnbQynURaQ0DluCFKAhZEuwF0e?usp=sharing',
+  
+  // PCMB Bundle (Complete) - Single Link
+  pcmb: 'https://drive.google.com/drive/folders/11s9el_br111RWZIH5ZeELKr9bTX3Zf1H?usp=sharing',
+}
+
 export async function POST(req: NextRequest) {
   try {
     const {
@@ -11,7 +26,16 @@ export async function POST(req: NextRequest) {
       selectedClass,
       selectedSubject,
       isBundleMode,
+      bundleType, // Optional - may or may not be present
     } = await req.json()
+
+    console.log('Payment verification request:', {
+      phoneNumber,
+      selectedClass,
+      selectedSubject,
+      isBundleMode,
+      bundleType,
+    })
 
     // Verify signature
     const body = razorpay_order_id + '|' + razorpay_payment_id
@@ -23,49 +47,114 @@ export async function POST(req: NextRequest) {
     const isValid = expectedSignature === razorpay_signature
 
     if (!isValid) {
+      console.error('Invalid payment signature')
       return NextResponse.json(
         { success: false, error: 'Invalid signature' },
         { status: 400 }
       )
     }
 
-    // Payment is verified - now generate/retrieve Google Drive links
-    // TODO: Replace these with actual Google Drive links from your database
+    console.log('✅ Signature verified successfully')
+
+    // Payment is verified - generate Google Drive links
     let driveLinks: { [key: string]: string } = {}
+    let linkName = ''
 
     if (isBundleMode) {
+      console.log('Bundle mode detected')
+      
+      // Determine which bundle based on bundleType OR selectedClass
+      let finalBundleType = bundleType
+      
+      // If bundleType not provided, determine from class
+      if (!finalBundleType) {
+        if (selectedClass === '10') {
+          finalBundleType = 'science_maths'
+          console.log('Class 10 bundle - using science_maths')
+        } else {
+          // Class 12 - default to PCM if not specified
+          finalBundleType = 'pcm'
+          console.log('⚠️ Class 12 bundle type not specified, defaulting to PCM')
+        }
+      }
+
+      // Get the link
+      const link = DRIVE_LINKS[finalBundleType as keyof typeof DRIVE_LINKS]
+      
+      if (!link) {
+        console.error('Invalid bundle type:', finalBundleType)
+        return NextResponse.json(
+          { success: false, error: 'Invalid bundle type' },
+          { status: 400 }
+        )
+      }
+
+      // Set display name
+      linkName = finalBundleType === 'science_maths' ? 'Science & Maths' : 
+                 finalBundleType === 'pcm' ? 'PCM Bundle' :
+                 finalBundleType === 'pcb' ? 'PCB Bundle' :
+                 finalBundleType === 'pcmb' ? 'PCMB Bundle' : 'Study Bundle'
+      
       driveLinks = {
-        physics: `https://drive.google.com/file/d/PHYSICS_CLASS${selectedClass}_${phoneNumber}/view`,
-        chemistry: `https://drive.google.com/file/d/CHEMISTRY_CLASS${selectedClass}_${phoneNumber}/view`,
-        maths: `https://drive.google.com/file/d/MATHS_CLASS${selectedClass}_${phoneNumber}/view`,
+        [linkName]: link
+      }
+      
+      console.log('✅ Bundle link generated:', linkName)
+    } else if (selectedSubject) {
+      console.log('Individual subject mode:', selectedSubject)
+      
+      // Individual subject purchase - map to appropriate bundle link
+      const subjectLowerCase = selectedSubject.toLowerCase()
+      
+      if (selectedClass === '10') {
+        // Class 10 subjects use science_maths bundle
+        driveLinks = {
+          [selectedSubject]: DRIVE_LINKS.science_maths
+        }
+        console.log('✅ Class 10 individual subject - using science_maths link')
+      } else if (selectedClass === '12') {
+        // Class 12 individual subjects map to their bundles
+        if (subjectLowerCase === 'biology') {
+          driveLinks = {
+            [selectedSubject]: DRIVE_LINKS.pcb
+          }
+          console.log('✅ Biology subject - using PCB link')
+        } else {
+          // Physics, Chemistry, Maths use PCM bundle
+          driveLinks = {
+            [selectedSubject]: DRIVE_LINKS.pcm
+          }
+          console.log('✅ PCM subject - using PCM link')
+        }
       }
     } else {
-      driveLinks = {
-        [selectedSubject]: `https://drive.google.com/file/d/${selectedSubject?.toUpperCase()}_CLASS${selectedClass}_${phoneNumber}/view`,
-      }
+      console.error('❌ Neither bundle mode nor subject specified')
+      return NextResponse.json(
+        { success: false, error: 'No subject or bundle specified' },
+        { status: 400 }
+      )
     }
 
-    // TODO: Store payment details in database
-    // await db.payments.create({
-    //   razorpay_order_id,
-    //   razorpay_payment_id,
-    //   phoneNumber,
-    //   selectedClass,
-    //   selectedSubject,
-    //   isBundleMode,
-    //   driveLinks,
-    //   createdAt: new Date(),
-    // })
+    // Validate that we have links
+    if (Object.keys(driveLinks).length === 0) {
+      console.error('❌ NO DRIVE LINKS GENERATED')
+      return NextResponse.json(
+        { success: false, error: 'Could not generate download links' },
+        { status: 500 }
+      )
+    }
 
+    console.log('✅ Payment verified! Generated links:', driveLinks)
+
+    // TODO: Store payment details in database
     // TODO: Send WhatsApp message with links
-    // await sendWhatsAppMessage(phoneNumber, driveLinks, isBundleMode)
 
     return NextResponse.json({
       success: true,
       driveLinks,
     })
   } catch (error) {
-    console.error('Error verifying payment:', error)
+    console.error('❌ Error verifying payment:', error)
     return NextResponse.json(
       { success: false, error: 'Payment verification failed' },
       { status: 500 }

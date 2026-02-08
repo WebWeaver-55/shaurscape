@@ -24,7 +24,16 @@ export async function POST(req: NextRequest) {
       key_secret: keySecret,
     })
 
-    const { amount, phoneNumber, selectedClass, selectedSubject, isBundleMode } = await req.json()
+    const { amount, phoneNumber, selectedClass, selectedSubject, isBundleMode, bundleType } = await req.json()
+
+    console.log('Creating order:', {
+      amount,
+      phoneNumber,
+      selectedClass,
+      selectedSubject,
+      isBundleMode,
+      bundleType
+    })
 
     const options = {
       amount: amount * 100, // Convert to paise
@@ -35,10 +44,13 @@ export async function POST(req: NextRequest) {
         selectedClass,
         selectedSubject: selectedSubject || 'bundle',
         isBundleMode: isBundleMode.toString(),
+        bundleType: bundleType || 'none',
       },
     }
 
     const order = await razorpay.orders.create(options)
+
+    console.log('Order created successfully:', order.id)
 
     return NextResponse.json({
       id: order.id,

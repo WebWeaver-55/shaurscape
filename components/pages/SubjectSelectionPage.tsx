@@ -5,54 +5,71 @@ import { Button } from '@/components/ui/button'
 
 interface SubjectSelectionPageProps {
   selectedClass: '10' | '12'
-  onSelectSubject: (subject: 'physics' | 'chemistry' | 'maths') => void
-  onBundleSelect?: () => void
+  onBundleSelect: (bundleType: 'science_maths' | 'pcm' | 'pcb' | 'pcmb') => void  // ✅ Added 'science_maths'
   onBack: () => void
 }
 
-const subjects = [
+const class10Bundles = [
   {
-    id: 'physics',
-    name: 'Physics',
-    icon: '⚡',
-    description: 'Mechanics, Thermodynamics, Electromagnetism & more',
-    color: 'from-primary/20 to-primary/5',
-    features: ['Mechanics', 'Waves', 'Optics', 'Electromagnetism'],
+    id: 'science_maths',
+    name: 'Science + Maths',
+    subjects: ['Physics', 'Chemistry', 'Biology', 'Mathematics'],
+    price: 49,
+    badge: 'Complete Class 10 Package',
+    color: 'from-blue-500/10 to-purple-500/5',
+    icon: '📚',
+  },
+]
+
+const class12Bundles = [
+  {
+    id: 'pcm',
+    name: 'PCM Bundle',
+    subjects: ['Physics', 'Chemistry', 'Mathematics'],
+    price: 49,
+    badge: 'Engineering Stream',
+    color: 'from-blue-500/10 to-blue-500/5',
+    icon: '🎯',
   },
   {
-    id: 'chemistry',
-    name: 'Chemistry',
-    icon: '🧪',
-    description: 'Organic, Inorganic, Physical Chemistry Topics',
-    color: 'from-primary/10 to-primary/0',
-    features: ['Organic', 'Inorganic', 'Physical', 'Periodic Table'],
+    id: 'pcb',
+    name: 'PCB Bundle',
+    subjects: ['Physics', 'Chemistry', 'Biology'],
+    price: 49,
+    badge: 'Medical Stream',
+    color: 'from-green-500/10 to-green-500/5',
+    icon: '🏥',
   },
   {
-    id: 'maths',
-    name: 'Mathematics',
-    icon: '📐',
-    description: 'Algebra, Geometry, Calculus & Statistics',
-    color: 'from-primary/20 to-primary/5',
-    features: ['Algebra', 'Geometry', 'Calculus', 'Probability'],
+    id: 'pcmb',
+    name: 'PCMB Bundle',
+    subjects: ['Physics', 'Chemistry', 'Mathematics', 'Biology'],
+    price: 59,  // ✅ Fixed price to 59 for PCMB
+    badge: 'Complete Package',
+    color: 'from-purple-500/10 to-purple-500/5',
+    icon: '⭐',
   },
 ]
 
 export function SubjectSelectionPage({
   selectedClass,
-  onSelectSubject,
   onBundleSelect,
   onBack,
 }: SubjectSelectionPageProps) {
+  // Select bundles based on class
+  const bundles = selectedClass === '10' ? class10Bundles : class12Bundles
+  const gridCols = selectedClass === '10' ? 'md:grid-cols-1 max-w-md' : 'md:grid-cols-3'
+  
   return (
     <div className="min-h-screen flex flex-col bg-background">
       {/* Header with Back Button */}
       <div className="border-b border-border">
-        <div className="max-w-4xl mx-auto px-4 py-6 flex items-center">
+        <div className="max-w-6xl mx-auto px-3 sm:px-4 py-4 sm:py-6 flex items-center">
           <Button
             variant="outline"
             size="sm"
             onClick={onBack}
-            className="gap-2 bg-transparent"
+            className="gap-2 bg-transparent h-9 sm:h-auto"
           >
             <ArrowLeft className="w-4 h-4" />
             Back
@@ -61,87 +78,77 @@ export function SubjectSelectionPage({
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col items-center justify-center px-4 py-12">
+      <div className="flex-1 flex flex-col items-center justify-center px-3 sm:px-4 py-8 sm:py-12">
         {/* Title */}
-        <div className="text-center mb-12">
-          <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-2">
-            Select Subject
+        <div className="text-center mb-8 sm:mb-12">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground mb-2">
+            Choose Your Study Package
           </h1>
-          <p className="text-muted-foreground">
-            Class {selectedClass} - PCM Subjects
+          <p className="text-sm sm:text-base text-muted-foreground">
+            Class {selectedClass} - Complete Subject Bundles
           </p>
         </div>
 
-        {/* Subject Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl w-full">
-          {subjects.map((subject) => (
-            <button
-              key={subject.id}
-              onClick={() => onSelectSubject(subject.id as 'physics' | 'chemistry' | 'maths')}
-              className="group relative overflow-hidden rounded-xl bg-card border border-border p-6 text-center transition-all hover:shadow-2xl hover:border-primary active:scale-95 h-full"
-            >
-              {/* Gradient overlay */}
-              <div className={`absolute inset-0 bg-gradient-to-br ${subject.color} opacity-0 group-hover:opacity-100 transition-opacity`} />
+        {/* Bundle Options */}
+        <div className="w-full max-w-6xl">
+          <h2 className="text-lg sm:text-xl font-semibold text-foreground mb-6 sm:mb-8 text-center">
+            Available Bundles
+          </h2>
 
-              <div className="relative z-10 flex flex-col h-full">
-                <div className="text-5xl mb-4 group-hover:scale-110 transition-transform">{subject.icon}</div>
-                <h3 className="text-2xl font-bold text-foreground mb-2">{subject.name}</h3>
-                <p className="text-xs md:text-sm text-muted-foreground mb-6 flex-grow">
-                  {subject.description}
-                </p>
-
-                {/* Features tags */}
-                <div className="flex flex-wrap gap-2 justify-center mb-6">
-                  {subject.features.slice(0, 2).map((feature) => (
-                    <span key={feature} className="text-xs bg-primary/10 text-primary px-2 py-1 rounded">
-                      {feature}
+          <div className={`grid grid-cols-1 ${gridCols} gap-4 sm:gap-6 mx-auto`}>
+            {bundles.map((bundle) => (
+              <button
+                key={bundle.id}
+                onClick={() => onBundleSelect(bundle.id as 'science_maths' | 'pcm' | 'pcb' | 'pcmb')}
+                className="group relative overflow-hidden rounded-xl bg-card border-2 border-border p-6 sm:p-8 text-center transition-all hover:shadow-xl hover:border-primary active:scale-95"
+              >
+                <div className={`absolute inset-0 bg-gradient-to-br ${bundle.color} opacity-0 group-hover:opacity-100 transition-opacity`} />
+                
+                <div className="relative z-10">
+                  {/* Badge */}
+                  <div className="inline-block mb-4">
+                    <span className="text-xs sm:text-sm font-semibold text-primary bg-primary/10 px-4 py-1.5 rounded-full">
+                      {bundle.badge}
                     </span>
-                  ))}
-                </div>
+                  </div>
 
-                <div className="inline-block px-4 py-2 bg-primary text-primary-foreground rounded-lg text-xs font-semibold group-hover:shadow-lg transition-shadow mt-auto">
-                  Get {subject.name}
+                  {/* Icon */}
+                  <div className="text-5xl sm:text-6xl mb-4 group-hover:scale-110 transition-transform">
+                    {bundle.icon}
+                  </div>
+
+                  {/* Title */}
+                  <h3 className="text-2xl sm:text-3xl font-bold text-foreground mb-3">
+                    {bundle.name}
+                  </h3>
+
+                  {/* Price */}
+                  <div className="text-4xl sm:text-5xl font-bold text-primary mb-4">
+                    ₹{bundle.price}
+                  </div>
+
+                  {/* Subjects List */}
+                  <div className="text-sm sm:text-base text-muted-foreground mb-6 space-y-1">
+                    {bundle.subjects.map((subject) => (
+                      <div key={subject} className="flex items-center justify-center gap-2">
+                        <span className="w-1.5 h-1.5 bg-primary rounded-full"></span>
+                        <span>{subject}</span>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* CTA */}
+                  <div className="inline-block px-6 sm:px-8 py-3 bg-primary text-primary-foreground rounded-lg text-sm sm:text-base font-semibold group-hover:shadow-lg transition-shadow">
+                    Get {bundle.name}
+                  </div>
                 </div>
-              </div>
-            </button>
-          ))}
+              </button>
+            ))}
+          </div>
         </div>
 
-        {/* Bundle Option */}
-        {onBundleSelect && (
-          <div className="mt-12 w-full max-w-4xl">
-            <div className="relative mb-8">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-border" />
-              </div>
-              <div className="relative flex justify-center">
-                <span className="px-3 bg-background text-muted-foreground text-sm font-medium">
-                  Or get all three
-                </span>
-              </div>
-            </div>
-
-            <button
-              onClick={onBundleSelect}
-              className="w-full group relative overflow-hidden rounded-lg bg-primary/10 border border-primary p-8 text-center transition-all hover:shadow-xl hover:bg-primary/15 active:scale-95"
-            >
-              <div className="absolute inset-0 bg-gradient-to-r from-primary/0 to-primary/5 group-hover:from-primary/5 group-hover:to-primary/15 transition-all" />
-              <div className="relative z-10">
-                <div className="text-sm font-semibold text-muted-foreground mb-2">Save Big Bundle</div>
-                <h3 className="text-3xl font-bold text-primary mb-3">₹129</h3>
-                <p className="text-sm text-muted-foreground mb-4">
-                  All 3 Subjects - Physics, Chemistry & Mathematics
-                </p>
-                <div className="inline-block px-6 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-semibold group-hover:shadow-lg transition-shadow">
-                  Get All Three
-                </div>
-              </div>
-            </button>
-          </div>
-        )}
-
         {/* Info */}
-        <div className="mt-12 text-center text-sm text-muted-foreground max-w-2xl">
+        <div className="mt-8 sm:mt-12 text-center text-xs sm:text-sm text-muted-foreground max-w-2xl px-4">
           <p>Each subject contains important questions and topics curated from latest exam patterns</p>
         </div>
       </div>

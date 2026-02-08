@@ -8,20 +8,29 @@ interface SuccessPageProps {
   driveLinks: { [key: string]: string }
   phoneNumber: string
   isBundleMode: boolean
+  bundleType?: 'science_maths' | 'pcm' | 'pcb' | 'pcmb'
   onStartOver: () => void
+}
+
+const bundleNames: { [key: string]: string } = {
+  science_maths: 'Science + Maths (Class 10)',
+  pcm: 'PCM Bundle (Engineering)',
+  pcb: 'PCB Bundle (Medical)',
+  pcmb: 'PCMB Bundle (Complete)',
 }
 
 export function SuccessPage({
   driveLinks,
   phoneNumber,
   isBundleMode,
+  bundleType,
   onStartOver,
 }: SuccessPageProps) {
   const [copied, setCopied] = useState(false)
 
   const handleCopyLinks = () => {
     const linksText = Object.entries(driveLinks)
-      .map(([subject, link]) => `${subject.toUpperCase()}: ${link}`)
+      .map(([subject, link]) => `${subject}: ${link}`)
       .join('\n')
     navigator.clipboard.writeText(linksText)
     setCopied(true)
@@ -30,20 +39,22 @@ export function SuccessPage({
 
   const handleSendToWhatsApp = () => {
     let message = ''
-    if (isBundleMode) {
-      message = `📚 StudyHub - All 3 Subjects Bundle\n\nYour Links:\n\n`
-      message += Object.entries(driveLinks)
-        .map(([subject, link]) => `📖 ${subject.toUpperCase()}:\n${link}`)
-        .join('\n\n')
-      message += `\n\n⚠️ IMPORTANT: This message will ONLY be shown once!\nAll data will be deleted after you close this page.\nSave these links immediately! You won't be able to access them again.`
+    const link = Object.values(driveLinks)[0]
+    const bundleName = Object.keys(driveLinks)[0]
+    
+    if (isBundleMode && bundleType) {
+      const fullBundleName = bundleNames[bundleType] || 'Bundle'
+      message = `📚 StudyHub - ${fullBundleName}\n\n📖 Your Download Link:\n${link}\n\n⚠️ IMPORTANT: This message will ONLY be shown once!\nAll data will be deleted after you close this page.\nSave this link immediately! You won't be able to access it again.`
     } else {
-      const subject = Object.keys(driveLinks)[0]
-      const link = Object.values(driveLinks)[0]
-      message = `📚 StudyHub - ${subject.toUpperCase()}\n\nYour Download Link:\n${link}\n\n⚠️ IMPORTANT: This message will ONLY be shown once!\nAll data will be deleted after you close this page.\nSave this link immediately! You won't be able to access it again.`
+      message = `📚 StudyHub - ${bundleName}\n\nYour Download Link:\n${link}\n\n⚠️ IMPORTANT: This message will ONLY be shown once!\nAll data will be deleted after you close this page.\nSave this link immediately! You won't be able to access it again.`
     }
     const encoded = encodeURIComponent(message)
     window.open(`https://wa.me/${phoneNumber}?text=${encoded}`, '_blank')
   }
+
+  // Get the single link
+  const mainLink = Object.values(driveLinks)[0]
+  const linkName = Object.keys(driveLinks)[0]
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center px-3 sm:px-4 bg-background py-8 sm:py-12">
@@ -60,7 +71,9 @@ export function SuccessPage({
           Payment Successful!
         </h1>
         <p className="text-base sm:text-lg text-muted-foreground mb-6 sm:mb-8 px-2">
-          {isBundleMode ? 'All 3 subjects are ready for download' : 'Your study material is ready'}
+          {isBundleMode && bundleType
+            ? `${bundleNames[bundleType]} - Ready for download` 
+            : 'Your study material is ready'}
         </p>
 
         {/* Success Card */}
@@ -72,50 +85,48 @@ export function SuccessPage({
               <div className="flex items-start gap-2 sm:gap-3">
                 <AlertCircle className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
                 <div className="text-left">
-                  <p className="text-sm font-bold text-primary">CRITICAL: Save These Links NOW!</p>
+                  <p className="text-sm font-bold text-primary">CRITICAL: Save This Link NOW!</p>
                   <p className="text-xs text-muted-foreground mt-1.5 sm:mt-2">
-                    Your {isBundleMode ? 'links will NEVER be shown again' : 'link will NEVER be shown again'}. All data will be deleted after you close this page. Save {isBundleMode ? 'them' : 'it'} to yourself via WhatsApp immediately, or you will lose access permanently.
+                    Your link will NEVER be shown again. All data will be deleted after you close this page. Save it to yourself via WhatsApp immediately, or you will lose access permanently.
                   </p>
                 </div>
               </div>
             </div>
 
-            {/* Download Links Display */}
-            <div className="mt-4 sm:mt-6 space-y-3">
-              {Object.entries(driveLinks).map(([subject, link]) => (
-                <div key={subject} className="bg-secondary/50 border border-border rounded-lg p-3 sm:p-4">
-                  <div className="space-y-3">
-                    {/* Subject Name */}
-                    <div className="text-left">
-                      <p className="text-xs text-muted-foreground mb-1">Subject</p>
-                      <p className="text-sm sm:text-base font-semibold text-foreground capitalize">{subject}</p>
-                    </div>
-                    
-                    {/* Link Input with Copy Button */}
-                    <div className="flex flex-col sm:flex-row gap-2">
-                      <input
-                        type="text"
-                        value={link}
-                        readOnly
-                        className="flex-1 px-3 py-2.5 sm:py-3 rounded-lg border border-border bg-secondary text-foreground text-xs sm:text-sm w-full overflow-hidden text-ellipsis"
-                      />
-                      <button
-                        onClick={() => {
-                          navigator.clipboard.writeText(link);
-                          setCopied(true);
-                          setTimeout(() => setCopied(false), 2000);
-                        }}
-                        className="px-4 py-2.5 sm:py-3 rounded-lg bg-primary text-primary-foreground hover:shadow-lg transition-all active:scale-95 flex items-center justify-center gap-2 whitespace-nowrap"
-                      >
-                        <Copy className="w-4 h-4" />
-                        <span className="text-sm font-medium">
-                          {copied ? 'Copied!' : 'Copy'}
-                        </span>
-                      </button>
-                    </div>
+            {/* Download Link Display */}
+            <div className="mt-4 sm:mt-6">
+              <div className="bg-secondary/50 border border-border rounded-lg p-3 sm:p-4">
+                <div className="space-y-3">
+                  {/* Bundle/Subject Name */}
+                  <div className="text-left">
+                    <p className="text-xs text-muted-foreground mb-1">Your Download</p>
+                    <p className="text-sm sm:text-base font-semibold text-foreground capitalize">{linkName}</p>
+                  </div>
+                  
+                  {/* Link Input with Copy Button */}
+                  <div className="flex flex-col sm:flex-row gap-2">
+                    <input
+                      type="text"
+                      value={mainLink}
+                      readOnly
+                      className="flex-1 px-3 py-2.5 sm:py-3 rounded-lg border border-border bg-secondary text-foreground text-xs sm:text-sm w-full overflow-hidden text-ellipsis"
+                    />
+                    <button
+                      onClick={() => {
+                        navigator.clipboard.writeText(mainLink);
+                        setCopied(true);
+                        setTimeout(() => setCopied(false), 2000);
+                      }}
+                      className="px-4 py-2.5 sm:py-3 rounded-lg bg-primary text-primary-foreground hover:shadow-lg transition-all active:scale-95 flex items-center justify-center gap-2 whitespace-nowrap"
+                    >
+                      <Copy className="w-4 h-4" />
+                      <span className="text-sm font-medium">
+                        {copied ? 'Copied!' : 'Copy'}
+                      </span>
+                    </button>
                   </div>
                 </div>
-              ))}
+              </div>
             </div>
 
             {/* Next Steps */}
@@ -124,7 +135,7 @@ export function SuccessPage({
               <ol className="text-xs sm:text-sm text-muted-foreground space-y-2">
                 <li className="flex gap-2">
                   <span className="font-semibold text-foreground">1.</span>
-                  <span>Check your WhatsApp for the direct download link</span>
+                  <span>Send the link to yourself via WhatsApp (use button below)</span>
                 </li>
                 <li className="flex gap-2">
                   <span className="font-semibold text-foreground">2.</span>
@@ -132,7 +143,7 @@ export function SuccessPage({
                 </li>
                 <li className="flex gap-2">
                   <span className="font-semibold text-foreground">3.</span>
-                  <span>Download the study materials to your device</span>
+                  <span>Download all study materials to your device</span>
                 </li>
                 <li className="flex gap-2">
                   <span className="font-semibold text-foreground">4.</span>
@@ -151,7 +162,7 @@ export function SuccessPage({
             className="gap-2 w-full bg-transparent h-11 sm:h-auto"
           >
             <Copy className="w-4 h-4" />
-            {copied ? 'Copied!' : 'Copy Links'}
+            {copied ? 'Copied!' : 'Copy Link'}
           </Button>
           <Button
             onClick={handleSendToWhatsApp}
