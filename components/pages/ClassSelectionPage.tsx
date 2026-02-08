@@ -47,7 +47,7 @@ export function ClassSelectionPage({ onSelectClass }: ClassSelectionPageProps) {
 
               {/* Button inside card */}
               <div className="mt-6">
-                <div className="inline-block px-6 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-semibold group-hover:shadow-lg transition-shadow">
+                <div className="inline-block px-8 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-semibold group-hover:shadow-lg transition-shadow">
                   Select Class {item.class}
                 </div>
               </div>
