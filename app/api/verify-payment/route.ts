@@ -60,46 +60,36 @@ export async function POST(req: NextRequest) {
     let driveLinks: { [key: string]: string } = {}
     let linkName = ''
 
-    if (isBundleMode) {
-      console.log('Bundle mode detected')
+    if (isBundleMode && bundleType) {
+      console.log('Bundle mode detected with bundleType:', bundleType)
       
-      // Determine which bundle based on bundleType OR selectedClass
-      let finalBundleType = bundleType
-      
-      // If bundleType not provided, determine from class
-      if (!finalBundleType) {
-        if (selectedClass === '10') {
-          finalBundleType = 'science_maths'
-          console.log('Class 10 bundle - using science_maths')
-        } else {
-          // Class 12 - default to PCM if not specified
-          finalBundleType = 'pcm'
-          console.log('⚠️ Class 12 bundle type not specified, defaulting to PCM')
-        }
-      }
-
-      // Get the link
-      const link = DRIVE_LINKS[finalBundleType as keyof typeof DRIVE_LINKS]
+      // Get the link based on bundleType
+      const link = DRIVE_LINKS[bundleType as keyof typeof DRIVE_LINKS]
       
       if (!link) {
-        console.error('Invalid bundle type:', finalBundleType)
+        console.error('Invalid bundle type:', bundleType)
         return NextResponse.json(
           { success: false, error: 'Invalid bundle type' },
           { status: 400 }
         )
       }
 
-      // Set display name
-      linkName = finalBundleType === 'science_maths' ? 'Science & Maths' : 
-                 finalBundleType === 'pcm' ? 'PCM Bundle' :
-                 finalBundleType === 'pcb' ? 'PCB Bundle' :
-                 finalBundleType === 'pcmb' ? 'PCMB Bundle' : 'Study Bundle'
+      // Set display name based on bundle type
+      if (bundleType === 'science_maths') {
+        linkName = 'Science & Maths'
+      } else if (bundleType === 'pcm') {
+        linkName = 'PCM Bundle'
+      } else if (bundleType === 'pcb') {
+        linkName = 'PCB Bundle'
+      } else if (bundleType === 'pcmb') {
+        linkName = 'PCMB Bundle'
+      }
       
       driveLinks = {
         [linkName]: link
       }
       
-      console.log('✅ Bundle link generated:', linkName)
+      console.log('✅ Bundle link generated:', linkName, '→', link)
     } else if (selectedSubject) {
       console.log('Individual subject mode:', selectedSubject)
       

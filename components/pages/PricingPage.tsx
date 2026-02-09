@@ -4,7 +4,7 @@ import React from "react"
 
 import { ArrowLeft, Check, AlertCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 
 interface PricingPageProps {
   selectedClass: '10' | '12'
@@ -72,6 +72,16 @@ export function PricingPage({
   const [phoneNumber, setPhoneNumber] = useState('')
   const [phoneError, setPhoneError] = useState('')
 
+  // DEBUG: Log props on mount and changes
+  useEffect(() => {
+    console.log('=== PRICING PAGE DEBUG ===')
+    console.log('selectedClass:', selectedClass, 'type:', typeof selectedClass)
+    console.log('selectedSubject:', selectedSubject)
+    console.log('isBundleMode:', isBundleMode)
+    console.log('bundleType:', bundleType)
+    console.log('========================')
+  }, [selectedClass, selectedSubject, isBundleMode, bundleType])
+
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value.replace(/\D/g, '').slice(0, 10)
     setPhoneNumber(value)
@@ -97,16 +107,31 @@ export function PricingPage({
   let subjects: string[] = [];
   
   if (isBundleMode && bundleType) {
+    console.log('Bundle mode detected, bundleType:', bundleType)
     price = bundlePrices[bundleType]
     packageName = bundleNames[bundleType]
     packageDescription = bundleDescriptions[bundleType]
     subjects = bundleSubjects[bundleType]
+    console.log('Bundle price set to:', price)
   } else if (selectedSubject) {
-    price = 49
+    console.log('Individual subject mode, class:', selectedClass)
+    // Individual subject pricing based on class
+    if (selectedClass === '10') {
+      price = 39  // Class 10 individual subjects are ₹39
+      console.log('Class 10 detected - price set to 39')
+    } else if (selectedClass === '12') {
+      price = 49  // Class 12 individual subjects are ₹49
+      console.log('Class 12 detected - price set to 49')
+    } else {
+      console.log('Unknown class:', selectedClass, '- defaulting to 49')
+      price = 49
+    }
     packageName = subjectNames[selectedSubject]
     packageDescription = `Complete ${subjectNames[selectedSubject]} for Class ${selectedClass}`
     subjects = [subjectNames[selectedSubject]]
   }
+  
+  console.log('Final price:', price)
 
   return (
     <div className="min-h-screen flex flex-col bg-background">

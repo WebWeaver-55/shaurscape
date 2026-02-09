@@ -19,8 +19,7 @@ type PageStep =
 interface AppState {
   currentStep: PageStep
   selectedClass: '10' | '12' | null
-  selectedSubject: 'physics' | 'chemistry' | 'maths' | null
-  isBundleMode: boolean
+  bundleType?: 'science_maths' | 'pcm' | 'pcb' | 'pcmb'
   phoneNumber: string | null
   driveLinks: { [key: string]: string }
 }
@@ -29,8 +28,7 @@ export default function Home() {
   const [appState, setAppState] = useState<AppState>({
     currentStep: 'landing',
     selectedClass: null,
-    selectedSubject: null,
-    isBundleMode: false,
+    bundleType: undefined,
     phoneNumber: null,
     driveLinks: {},
   })
@@ -43,25 +41,10 @@ export default function Home() {
     }))
   }
 
-  const handleSubjectSelect = (subject: 'physics' | 'chemistry' | 'maths') => {
+  const handleBundleSelect = (bundleType: 'science_maths' | 'pcm' | 'pcb' | 'pcmb') => {
     setAppState((prev) => ({
       ...prev,
-      selectedSubject: subject,
-      currentStep: 'pricing',
-    }))
-  }
-
-  const handleProceedToPayment = () => {
-    setAppState((prev) => ({
-      ...prev,
-      currentStep: 'payment',
-    }))
-  }
-
-  const handleBundleSelect = () => {
-    setAppState((prev) => ({
-      ...prev,
-      isBundleMode: true,
+      bundleType: bundleType,
       currentStep: 'pricing',
     }))
   }
@@ -86,8 +69,7 @@ export default function Home() {
     setAppState({
       currentStep: 'landing',
       selectedClass: null,
-      selectedSubject: null,
-      isBundleMode: false,
+      bundleType: undefined,
       phoneNumber: null,
       driveLinks: {},
     })
@@ -106,7 +88,6 @@ export default function Home() {
       {appState.currentStep === 'subject-selection' && (
         <SubjectSelectionPage
           selectedClass={appState.selectedClass!}
-          onSelectSubject={handleSubjectSelect}
           onBundleSelect={handleBundleSelect}
           onBack={() => setAppState((prev) => ({ ...prev, currentStep: 'class-selection' }))}
         />
@@ -115,18 +96,25 @@ export default function Home() {
       {appState.currentStep === 'pricing' && (
         <PricingPage
           selectedClass={appState.selectedClass!}
-          selectedSubject={appState.isBundleMode ? null : appState.selectedSubject!}
-          isBundleMode={appState.isBundleMode}
+          selectedSubject={null}
+          isBundleMode={true}
+          bundleType={appState.bundleType}
           onPhoneSubmit={handlePhoneSubmit}
-          onBack={() => setAppState((prev) => ({ ...prev, currentStep: 'subject-selection', isBundleMode: false }))}
+          onBack={() => setAppState((prev) => ({ 
+            ...prev, 
+            currentStep: 'subject-selection',
+            bundleType: undefined 
+          }))}
+          onPaymentClick={() => {}}
         />
       )}
 
       {appState.currentStep === 'payment' && (
         <PaymentPage
           selectedClass={appState.selectedClass!}
-          selectedSubject={appState.isBundleMode ? null : appState.selectedSubject!}
-          isBundleMode={appState.isBundleMode}
+          selectedSubject={null}
+          isBundleMode={true}
+          bundleType={appState.bundleType}
           phoneNumber={appState.phoneNumber!}
           onPaymentComplete={handlePaymentComplete}
           onBack={() => setAppState((prev) => ({ ...prev, currentStep: 'pricing' }))}
@@ -137,7 +125,8 @@ export default function Home() {
         <SuccessPage
           driveLinks={appState.driveLinks}
           phoneNumber={appState.phoneNumber!}
-          isBundleMode={appState.isBundleMode}
+          isBundleMode={true}
+          bundleType={appState.bundleType}
           onStartOver={handleReset}
         />
       )}

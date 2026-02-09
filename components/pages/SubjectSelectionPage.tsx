@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button'
 
 interface SubjectSelectionPageProps {
   selectedClass: '10' | '12'
-  onBundleSelect: (bundleType: 'science_maths' | 'pcm' | 'pcb' | 'pcmb') => void  // ✅ Added 'science_maths'
+  onBundleSelect: (bundleType: 'science_maths' | 'pcm' | 'pcb' | 'pcmb') => void
   onBack: () => void
 }
 
@@ -14,7 +14,7 @@ const class10Bundles = [
     id: 'science_maths',
     name: 'Science + Maths',
     subjects: ['Physics', 'Chemistry', 'Biology', 'Mathematics'],
-    price: 49,
+    price: 39,
     badge: 'Complete Class 10 Package',
     color: 'from-blue-500/10 to-purple-500/5',
     icon: '📚',
@@ -44,7 +44,7 @@ const class12Bundles = [
     id: 'pcmb',
     name: 'PCMB Bundle',
     subjects: ['Physics', 'Chemistry', 'Mathematics', 'Biology'],
-    price: 59,  // ✅ Fixed price to 59 for PCMB
+    price: 59,
     badge: 'Complete Package',
     color: 'from-purple-500/10 to-purple-500/5',
     icon: '⭐',

@@ -29,7 +29,7 @@ const bundleNames = {
 }
 
 const bundlePrices = {
-  science_maths: 49,
+  science_maths: 39,
   pcm: 49,
   pcb: 49,
   pcmb: 59,
