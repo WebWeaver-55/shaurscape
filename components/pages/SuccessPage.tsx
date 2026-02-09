@@ -99,7 +99,7 @@ export function SuccessPage({
                 <div className="space-y-3">
                   {/* Bundle/Subject Name */}
                   <div className="text-left">
-                    <p className="text-xs text-muted-foreground mb-1">Your Download</p>
+                    <p className="text-xs text-muted-foreground mb-2">Your Download</p>
                     <p className="text-sm sm:text-base font-semibold text-foreground capitalize">{linkName}</p>
                   </div>
                   
