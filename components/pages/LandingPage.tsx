@@ -58,7 +58,7 @@ export function LandingPage({ onStartClick }: LandingPageProps) {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="text-center">
             <p className="text-sm text-muted-foreground mb-3">Single Subject</p>
-            <p className="text-4xl font-bold text-primary">₹49</p>
+            <p className="text-4xl font-bold text-primary">₹35</p>
             <p className="text-xs text-muted-foreground mt-2">Physics, Chemistry or Maths</p>
           </div>
           <div className="flex items-center justify-center">
@@ -68,7 +68,7 @@ export function LandingPage({ onStartClick }: LandingPageProps) {
             <p className="text-sm text-muted-foreground mb-3">All Three Subjects</p>
             <div className="flex items-center justify-center gap-3">
               <p className="text-lg text-muted-foreground line-through opacity-60">₹499</p>
-              <p className="text-4xl font-bold text-primary">₹129</p>
+              <p className="text-4xl font-bold text-primary">₹35</p>
             </div>
             <p className="text-xs text-primary font-semibold mt-2">Save ₹18!</p>
           </div>

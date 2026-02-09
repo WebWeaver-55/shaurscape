@@ -31,10 +31,10 @@ const bundleNames = {
 }
 
 const bundlePrices = {
-  science_maths: 39,
-  pcm: 49,
-  pcb: 49,
-  pcmb: 59,
+  science_maths: 25,
+  pcm: 35,
+  pcb: 35,
+  pcmb: 39,
 }
 
 const bundleSubjects = {
@@ -101,7 +101,7 @@ export function PricingPage({
   }
 
   // Determine pricing and package details
-  let price = 49; // default
+  let price = 35; // default
   let packageName = 'Package';
   let packageDescription = 'Complete study materials';
   let subjects: string[] = [];
@@ -117,14 +117,14 @@ export function PricingPage({
     console.log('Individual subject mode, class:', selectedClass)
     // Individual subject pricing based on class
     if (selectedClass === '10') {
-      price = 39  // Class 10 individual subjects are ₹39
-      console.log('Class 10 detected - price set to 39')
+      price = 25  // Class 10 individual subjects are ₹39
+      console.log('Class 10 detected - price set to 25')
     } else if (selectedClass === '12') {
-      price = 49  // Class 12 individual subjects are ₹49
-      console.log('Class 12 detected - price set to 49')
+      price =35 // Class 12 individual subjects are ₹49
+      console.log('Class 12 detected - price set to 35')
     } else {
-      console.log('Unknown class:', selectedClass, '- defaulting to 49')
-      price = 49
+      console.log('Unknown class:', selectedClass, '- defaulting to 35')
+      price = 35
     }
     packageName = subjectNames[selectedSubject]
     packageDescription = `Complete ${subjectNames[selectedSubject]} for Class ${selectedClass}`

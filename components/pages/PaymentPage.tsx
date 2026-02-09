@@ -29,10 +29,10 @@ const bundleNames = {
 }
 
 const bundlePrices = {
-  science_maths: 39,
-  pcm: 49,
-  pcb: 49,
-  pcmb: 59,
+  science_maths: 25,
+  pcm: 35,
+  pcb: 35,
+  pcmb: 39,
 }
 
 const bundleSubjects = {
@@ -61,7 +61,7 @@ export function PaymentPage({
   const [scriptLoaded, setScriptLoaded] = useState(false)
   const subjectName = selectedSubject ? subjectNames[selectedSubject] : null
   const bundleName = bundleType ? bundleNames[bundleType] : null
-  const amount = isBundleMode && bundleType ? bundlePrices[bundleType] : 49
+  const amount = isBundleMode && bundleType ? bundlePrices[bundleType] : 35
 
   // Load Razorpay script
   useEffect(() => {
@@ -240,7 +240,7 @@ export function PaymentPage({
               ) : (
                 <div className="flex justify-between text-xs sm:text-sm">
                   <span className="text-muted-foreground">Class {selectedClass} - {subjectName}</span>
-                  <span className="font-medium text-foreground">₹49</span>
+                  <span className="font-medium text-foreground">₹35</span>
                 </div>
               )}
               <div className="flex justify-between text-xs sm:text-sm pt-2">
