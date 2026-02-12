@@ -16,10 +16,13 @@ type PageStep =
   | 'payment'
   | 'success'
 
+type BundleType = 'science_maths' | 'pcm' | 'pcb' | 'pcmb' | 'mcq_10' | 'mcq_12'
+
 interface AppState {
   currentStep: PageStep
   selectedClass: '10' | '12' | null
-  bundleType?: 'science_maths' | 'pcm' | 'pcb' | 'pcmb'
+  pageMode: 'bundle' | 'mcq'
+  bundleType?: BundleType
   phoneNumber: string | null
   driveLinks: { [key: string]: string }
 }
@@ -28,6 +31,7 @@ export default function Home() {
   const [appState, setAppState] = useState<AppState>({
     currentStep: 'landing',
     selectedClass: null,
+    pageMode: 'bundle',
     bundleType: undefined,
     phoneNumber: null,
     driveLinks: {},
@@ -41,10 +45,10 @@ export default function Home() {
     }))
   }
 
-  const handleBundleSelect = (bundleType: 'science_maths' | 'pcm' | 'pcb' | 'pcmb') => {
+  const handleBundleSelect = (bundleType: BundleType) => {
     setAppState((prev) => ({
       ...prev,
-      bundleType: bundleType,
+      bundleType,
       currentStep: 'pricing',
     }))
   }
@@ -69,6 +73,7 @@ export default function Home() {
     setAppState({
       currentStep: 'landing',
       selectedClass: null,
+      pageMode: 'bundle',
       bundleType: undefined,
       phoneNumber: null,
       driveLinks: {},
@@ -78,16 +83,27 @@ export default function Home() {
   return (
     <main className="min-h-screen bg-background">
       {appState.currentStep === 'landing' && (
-        <LandingPage onStartClick={() => setAppState((prev) => ({ ...prev, currentStep: 'class-selection' }))} />
+        <LandingPage
+          onBundleClick={() =>
+            setAppState((prev) => ({ ...prev, pageMode: 'bundle', currentStep: 'class-selection' }))
+          }
+          onMcqClick={() =>
+            setAppState((prev) => ({ ...prev, pageMode: 'mcq', currentStep: 'class-selection' }))
+          }
+        />
       )}
 
       {appState.currentStep === 'class-selection' && (
-        <ClassSelectionPage onSelectClass={handleClassSelect} />
+        <ClassSelectionPage
+          onSelectClass={handleClassSelect}
+          onBack={() => setAppState((prev) => ({ ...prev, currentStep: 'landing' }))}
+        />
       )}
 
       {appState.currentStep === 'subject-selection' && (
         <SubjectSelectionPage
           selectedClass={appState.selectedClass!}
+          pageMode={appState.pageMode}
           onBundleSelect={handleBundleSelect}
           onBack={() => setAppState((prev) => ({ ...prev, currentStep: 'class-selection' }))}
         />
@@ -100,11 +116,13 @@ export default function Home() {
           isBundleMode={true}
           bundleType={appState.bundleType}
           onPhoneSubmit={handlePhoneSubmit}
-          onBack={() => setAppState((prev) => ({ 
-            ...prev, 
-            currentStep: 'subject-selection',
-            bundleType: undefined 
-          }))}
+          onBack={() =>
+            setAppState((prev) => ({
+              ...prev,
+              currentStep: 'subject-selection',
+              bundleType: undefined,
+            }))
+          }
           onPaymentClick={() => {}}
         />
       )}

@@ -5,7 +5,8 @@ import { Button } from '@/components/ui/button'
 
 interface SubjectSelectionPageProps {
   selectedClass: '10' | '12'
-  onBundleSelect: (bundleType: 'science_maths' | 'pcm' | 'pcb' | 'pcmb') => void
+  pageMode: 'bundle' | 'mcq'
+  onBundleSelect: (bundleType: 'science_maths' | 'pcm' | 'pcb' | 'pcmb' | 'mcq_10' | 'mcq_12') => void
   onBack: () => void
 }
 
@@ -51,15 +52,59 @@ const class12Bundles = [
   },
 ]
 
+const mcqBundles = {
+  '10': [
+    {
+      id: 'mcq_10',
+      name: 'MCQ Bundle',
+      subjects: ['Physics MCQs', 'Chemistry MCQs', 'Biology MCQs', 'Mathematics MCQs'],
+      price: 9,
+      badge: 'Class 10 MCQ Practice',
+      color: 'from-orange-500/10 to-yellow-500/5',
+      icon: '🎯',
+    },
+  ],
+  '12': [
+    {
+      id: 'mcq_12',
+      name: 'PCMB MCQ Bundle',
+      subjects: ['Physics MCQs', 'Chemistry MCQs', 'Mathematics MCQs', 'Biology MCQs'],
+      price: 14,
+      badge: 'Class 12 MCQ Practice',
+      color: 'from-orange-500/10 to-yellow-500/5',
+      icon: '🎯',
+    },
+  ],
+}
+
 export function SubjectSelectionPage({
   selectedClass,
+  pageMode,
   onBundleSelect,
   onBack,
 }: SubjectSelectionPageProps) {
-  // Select bundles based on class
-  const bundles = selectedClass === '10' ? class10Bundles : class12Bundles
-  const gridCols = selectedClass === '10' ? 'md:grid-cols-1 max-w-md' : 'md:grid-cols-3'
-  
+  const isMcqMode = pageMode === 'mcq'
+
+  // Pick the right bundles
+  let bundles: any[]
+  if (isMcqMode) {
+    bundles = mcqBundles[selectedClass]
+  } else {
+    bundles = selectedClass === '10' ? class10Bundles : class12Bundles
+  }
+
+  const gridCols =
+    bundles.length === 1
+      ? 'md:grid-cols-1 max-w-md'
+      : bundles.length === 2
+      ? 'md:grid-cols-2 max-w-2xl'
+      : 'md:grid-cols-3'
+
+  const pageTitle = isMcqMode ? 'Choose Your MCQ Package' : 'Choose Your Study Package'
+  const pageSubtitle = isMcqMode
+    ? `Class ${selectedClass} — Multiple Choice Question Bundles`
+    : `Class ${selectedClass} — Complete Subject Bundles`
+
   return (
     <div className="min-h-screen flex flex-col bg-background">
       {/* Header with Back Button */}
@@ -82,11 +127,9 @@ export function SubjectSelectionPage({
         {/* Title */}
         <div className="text-center mb-8 sm:mb-12">
           <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground mb-2">
-            Choose Your Study Package
+            {pageTitle}
           </h1>
-          <p className="text-sm sm:text-base text-muted-foreground">
-            Class {selectedClass} - Complete Subject Bundles
-          </p>
+          <p className="text-sm sm:text-base text-muted-foreground">{pageSubtitle}</p>
         </div>
 
         {/* Bundle Options */}
@@ -99,11 +142,23 @@ export function SubjectSelectionPage({
             {bundles.map((bundle) => (
               <button
                 key={bundle.id}
-                onClick={() => onBundleSelect(bundle.id as 'science_maths' | 'pcm' | 'pcb' | 'pcmb')}
+                onClick={() =>
+                  onBundleSelect(
+                    bundle.id as
+                      | 'science_maths'
+                      | 'pcm'
+                      | 'pcb'
+                      | 'pcmb'
+                      | 'mcq_10'
+                      | 'mcq_12'
+                  )
+                }
                 className="group relative overflow-hidden rounded-xl bg-card border-2 border-border p-6 sm:p-8 text-center transition-all hover:shadow-xl hover:border-primary active:scale-95"
               >
-                <div className={`absolute inset-0 bg-gradient-to-br ${bundle.color} opacity-0 group-hover:opacity-100 transition-opacity`} />
-                
+                <div
+                  className={`absolute inset-0 bg-gradient-to-br ${bundle.color} opacity-0 group-hover:opacity-100 transition-opacity`}
+                />
+
                 <div className="relative z-10">
                   {/* Badge */}
                   <div className="inline-block mb-4">
@@ -129,7 +184,7 @@ export function SubjectSelectionPage({
 
                   {/* Subjects List */}
                   <div className="text-sm sm:text-base text-muted-foreground mb-6 space-y-1">
-                    {bundle.subjects.map((subject) => (
+                    {bundle.subjects.map((subject: string) => (
                       <div key={subject} className="flex items-center justify-center gap-2">
                         <span className="w-1.5 h-1.5 bg-primary rounded-full"></span>
                         <span>{subject}</span>
@@ -149,7 +204,9 @@ export function SubjectSelectionPage({
 
         {/* Info */}
         <div className="mt-8 sm:mt-12 text-center text-xs sm:text-sm text-muted-foreground max-w-2xl px-4">
-          <p>Each subject contains important questions and topics curated from latest exam patterns</p>
+          {isMcqMode
+            ? 'Chapter-wise MCQ practice questions aligned with latest CBSE exam patterns'
+            : 'Each subject contains important questions and topics curated from latest exam patterns'}
         </div>
       </div>
     </div>

@@ -1,7 +1,6 @@
 'use client';
 
 import React from "react"
-
 import { ArrowLeft, Check, AlertCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useState, useEffect } from 'react'
@@ -10,45 +9,53 @@ interface PricingPageProps {
   selectedClass: '10' | '12'
   selectedSubject: 'physics' | 'chemistry' | 'maths' | 'biology' | null
   isBundleMode: boolean
-  bundleType?: 'science_maths' | 'pcm' | 'pcb' | 'pcmb'
+  bundleType?: 'science_maths' | 'pcm' | 'pcb' | 'pcmb' | 'mcq_10' | 'mcq_12'
   onPhoneSubmit: (phoneNumber: string) => void
   onBack: () => void
   onPaymentClick: () => void
 }
 
-const subjectNames = {
+const subjectNames: Record<string, string> = {
   physics: 'Physics',
   chemistry: 'Chemistry',
   maths: 'Mathematics',
   biology: 'Biology',
 }
 
-const bundleNames = {
+const bundleNames: Record<string, string> = {
   science_maths: 'Science + Maths',
   pcm: 'PCM Bundle',
   pcb: 'PCB Bundle',
   pcmb: 'PCMB Bundle',
+  mcq_10: 'MCQ Bundle',
+  mcq_12: 'PCMB MCQ Bundle',
 }
 
-const bundlePrices = {
+const bundlePrices: Record<string, number> = {
   science_maths: 25,
   pcm: 35,
   pcb: 35,
   pcmb: 39,
+  mcq_10: 9,
+  mcq_12: 14,
 }
 
-const bundleSubjects = {
+const bundleSubjects: Record<string, string[]> = {
   science_maths: ['Physics', 'Chemistry', 'Biology', 'Mathematics'],
   pcm: ['Physics', 'Chemistry', 'Mathematics'],
   pcb: ['Physics', 'Chemistry', 'Biology'],
   pcmb: ['Physics', 'Chemistry', 'Mathematics', 'Biology'],
+  mcq_10: ['Physics MCQs', 'Chemistry MCQs', 'Biology MCQs', 'Mathematics MCQs'],
+  mcq_12: ['Physics MCQs', 'Chemistry MCQs', 'Mathematics MCQs', 'Biology MCQs'],
 }
 
-const bundleDescriptions = {
+const bundleDescriptions: Record<string, string> = {
   science_maths: 'Complete Science + Maths for Class 10',
-  pcm: 'Engineering Stream - Physics, Chemistry & Mathematics',
-  pcb: 'Medical Stream - Physics, Chemistry & Biology',
-  pcmb: 'Complete Package - All 4 Subjects',
+  pcm: 'Engineering Stream — Physics, Chemistry & Mathematics',
+  pcb: 'Medical Stream — Physics, Chemistry & Biology',
+  pcmb: 'Complete Package — All 4 Subjects',
+  mcq_10: 'Chapter-wise MCQ Practice for Class 10 PCMB',
+  mcq_12: 'Chapter-wise MCQ Practice for Class 12 PCMB',
 }
 
 const features = [
@@ -57,6 +64,15 @@ const features = [
   'Download from Google Drive',
   'Instant Access After Payment',
   'Latest Exam Pattern Questions',
+  'CBSE Curriculum Aligned',
+]
+
+const mcqFeatures = [
+  'Hundreds of MCQs per Subject',
+  'Chapter-wise Organised',
+  'Download from Google Drive',
+  'Instant Access After Payment',
+  'Latest Exam Pattern MCQs',
   'CBSE Curriculum Aligned',
 ]
 
@@ -71,16 +87,6 @@ export function PricingPage({
 }: PricingPageProps) {
   const [phoneNumber, setPhoneNumber] = useState('')
   const [phoneError, setPhoneError] = useState('')
-
-  // DEBUG: Log props on mount and changes
-  useEffect(() => {
-    console.log('=== PRICING PAGE DEBUG ===')
-    console.log('selectedClass:', selectedClass, 'type:', typeof selectedClass)
-    console.log('selectedSubject:', selectedSubject)
-    console.log('isBundleMode:', isBundleMode)
-    console.log('bundleType:', bundleType)
-    console.log('========================')
-  }, [selectedClass, selectedSubject, isBundleMode, bundleType])
 
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value.replace(/\D/g, '').slice(0, 10)
@@ -100,38 +106,25 @@ export function PricingPage({
     onPhoneSubmit(phoneNumber)
   }
 
-  // Determine pricing and package details
-  let price = 35; // default
-  let packageName = 'Package';
-  let packageDescription = 'Complete study materials';
-  let subjects: string[] = [];
-  
+  let price = 35
+  let packageName = 'Package'
+  let packageDescription = 'Complete study materials'
+  let subjects: string[] = []
+  const isMcqMode = bundleType?.startsWith('mcq')
+
   if (isBundleMode && bundleType) {
-    console.log('Bundle mode detected, bundleType:', bundleType)
     price = bundlePrices[bundleType]
     packageName = bundleNames[bundleType]
     packageDescription = bundleDescriptions[bundleType]
     subjects = bundleSubjects[bundleType]
-    console.log('Bundle price set to:', price)
   } else if (selectedSubject) {
-    console.log('Individual subject mode, class:', selectedClass)
-    // Individual subject pricing based on class
-    if (selectedClass === '10') {
-      price = 25  // Class 10 individual subjects are ₹39
-      console.log('Class 10 detected - price set to 25')
-    } else if (selectedClass === '12') {
-      price =35 // Class 12 individual subjects are ₹49
-      console.log('Class 12 detected - price set to 35')
-    } else {
-      console.log('Unknown class:', selectedClass, '- defaulting to 35')
-      price = 35
-    }
+    price = selectedClass === '10' ? 25 : 35
     packageName = subjectNames[selectedSubject]
     packageDescription = `Complete ${subjectNames[selectedSubject]} for Class ${selectedClass}`
     subjects = [subjectNames[selectedSubject]]
   }
-  
-  console.log('Final price:', price)
+
+  const featureList = isMcqMode ? mcqFeatures : features
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
@@ -152,19 +145,19 @@ export function PricingPage({
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col items-center justify-center px-3 sm:px-4 py-8 sm:py-12">
-        {/* Title */}
         <div className="text-center mb-8 sm:mb-12">
           <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground mb-2 px-2">
-            {packageName} - Class {selectedClass}
+            {packageName} — Class {selectedClass}
           </h1>
           <p className="text-sm sm:text-base text-muted-foreground px-2">
-            Complete study materials with Google Drive access
+            {isMcqMode
+              ? 'Chapter-wise MCQ practice with Google Drive access'
+              : 'Complete study materials with Google Drive access'}
           </p>
         </div>
 
         {/* Pricing Card */}
         <div className="max-w-2xl w-full bg-card border border-border rounded-lg overflow-hidden hover:shadow-xl transition-shadow">
-          {/* Card Header */}
           <div className="bg-gradient-to-r from-primary to-primary/80 px-4 sm:px-6 py-8 sm:py-12 text-center">
             <h2 className="text-xl sm:text-2xl font-bold text-primary-foreground mb-2 sm:mb-3">
               {packageName} Package
@@ -176,31 +169,18 @@ export function PricingPage({
               <span className="text-4xl sm:text-5xl font-bold text-primary-foreground">₹{price}</span>
               <span className="text-primary-foreground/80 text-xs sm:text-sm">one-time</span>
             </div>
-            {isBundleMode && bundleType === 'science_maths' && (
-              <p className="text-xs sm:text-sm text-primary-foreground/80 mt-2">Best value for Class 10 students</p>
-            )}
-            {isBundleMode && (bundleType === 'pcm' || bundleType === 'pcb') && (
-              <p className="text-xs sm:text-sm text-primary-foreground/80 mt-2">Complete stream package</p>
-            )}
-            {isBundleMode && bundleType === 'pcmb' && (
-              <p className="text-xs sm:text-sm text-primary-foreground/80 mt-2">All subjects included - Best value!</p>
-            )}
           </div>
 
-          {/* Features List */}
           <div className="px-4 sm:px-6 py-6 sm:py-8">
             <p className="text-sm font-semibold text-foreground mb-4 sm:mb-6">What's Included:</p>
             <ul className="space-y-3 sm:space-y-4">
-              {/* Show subjects for bundles */}
               {isBundleMode && subjects.length > 0 && subjects.map((subject, index) => (
                 <li key={`subject-${index}`} className="flex items-start gap-2 sm:gap-3">
                   <Check className="w-4 h-4 sm:w-5 sm:h-5 text-primary flex-shrink-0 mt-0.5" />
                   <span className="text-sm sm:text-base text-foreground font-medium">{subject}</span>
                 </li>
               ))}
-              
-              {/* Show features */}
-              {features.map((feature, index) => (
+              {featureList.map((feature, index) => (
                 <li key={`feature-${index}`} className="flex items-start gap-2 sm:gap-3">
                   <Check className="w-4 h-4 sm:w-5 sm:h-5 text-primary flex-shrink-0 mt-0.5" />
                   <span className="text-xs sm:text-sm text-muted-foreground">{feature}</span>
@@ -209,7 +189,6 @@ export function PricingPage({
             </ul>
           </div>
 
-          {/* Phone Number Collection */}
           <div className="px-4 sm:px-6 py-4 sm:py-6 border-t border-border space-y-3 sm:space-y-4">
             <div>
               <label className="text-sm font-semibold text-foreground block mb-2">
@@ -230,10 +209,9 @@ export function PricingPage({
                 </p>
               )}
               <p className="text-xs text-muted-foreground mt-2">
-                We'll send your {isBundleMode ? 'download link' : 'download link'} to this number on WhatsApp
+                We'll send your download link to this number on WhatsApp
               </p>
             </div>
-
             <Button
               onClick={handleSubmit}
               className="w-full h-11 sm:h-12"

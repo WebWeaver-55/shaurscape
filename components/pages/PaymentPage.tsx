@@ -8,38 +8,44 @@ interface PaymentPageProps {
   selectedClass: '10' | '12'
   selectedSubject: 'physics' | 'chemistry' | 'maths' | 'biology' | null
   isBundleMode: boolean
-  bundleType?: 'pcm' | 'pcb' | 'pcmb' | 'science_maths'
+  bundleType?: 'pcm' | 'pcb' | 'pcmb' | 'science_maths' | 'mcq_10' | 'mcq_12'
   phoneNumber: string
   onPaymentComplete: (driveLinks: { [key: string]: string }) => void
   onBack: () => void
 }
 
-const subjectNames = {
+const subjectNames: Record<string, string> = {
   physics: 'Physics',
   chemistry: 'Chemistry',
   maths: 'Mathematics',
   biology: 'Biology',
 }
 
-const bundleNames = {
+const bundleNames: Record<string, string> = {
   science_maths: 'Science + Maths Bundle',
   pcm: 'PCM Bundle (Engineering)',
   pcb: 'PCB Bundle (Medical)',
   pcmb: 'PCMB Bundle (Complete)',
+  mcq_10: 'MCQ Bundle (Class 10)',
+  mcq_12: 'PCMB MCQ Bundle (Class 12)',
 }
 
-const bundlePrices = {
+const bundlePrices: Record<string, number> = {
   science_maths: 25,
   pcm: 35,
   pcb: 35,
   pcmb: 39,
+  mcq_10: 9,
+  mcq_12: 14,
 }
 
-const bundleSubjects = {
+const bundleSubjects: Record<string, string[]> = {
   science_maths: ['Science', 'Mathematics'],
   pcm: ['Physics', 'Chemistry', 'Mathematics'],
   pcb: ['Physics', 'Chemistry', 'Biology'],
   pcmb: ['Physics', 'Chemistry', 'Mathematics', 'Biology'],
+  mcq_10: ['Physics MCQs', 'Chemistry MCQs', 'Biology MCQs', 'Mathematics MCQs'],
+  mcq_12: ['Physics MCQs', 'Chemistry MCQs', 'Mathematics MCQs', 'Biology MCQs'],
 }
 
 declare global {
@@ -63,6 +69,9 @@ export function PaymentPage({
   const bundleName = bundleType ? bundleNames[bundleType] : null
   const amount = isBundleMode && bundleType ? bundlePrices[bundleType] : 35
 
+  // Safe subjects list — never undefined
+  const subjects: string[] = (bundleType && bundleSubjects[bundleType]) ? bundleSubjects[bundleType] : []
+
   // Load Razorpay script
   useEffect(() => {
     const script = document.createElement('script')
@@ -70,7 +79,6 @@ export function PaymentPage({
     script.async = true
     script.onload = () => setScriptLoaded(true)
     document.body.appendChild(script)
-
     return () => {
       document.body.removeChild(script)
     }
@@ -81,18 +89,13 @@ export function PaymentPage({
       alert('Payment gateway is loading. Please try again in a moment.')
       return
     }
-
     setIsProcessing(true)
-
     try {
-      // Create order on backend
       const response = await fetch('/api/create-order', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          amount: amount,
+          amount,
           phoneNumber,
           selectedClass,
           selectedSubject,
@@ -100,47 +103,32 @@ export function PaymentPage({
           bundleType,
         }),
       })
-
       const order = await response.json()
+      if (!order.id) throw new Error('Failed to create order')
 
-      if (!order.id) {
-        throw new Error('Failed to create order')
-      }
-
-      // Razorpay options
       const options = {
         key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
         amount: order.amount,
         currency: 'INR',
         name: 'StudyHub',
-        description: isBundleMode 
-          ? `Class ${selectedClass} - ${bundleName}` 
+        description: isBundleMode
+          ? `Class ${selectedClass} - ${bundleName}`
           : `Class ${selectedClass} - ${subjectName}`,
         order_id: order.id,
-        prefill: {
-          contact: phoneNumber,
-        },
+        prefill: { contact: phoneNumber },
         notes: {
-          phoneNumber: phoneNumber,
+          phoneNumber,
           bundleMode: isBundleMode,
           bundleType: bundleType || '',
           subject: selectedSubject,
           class: selectedClass,
         },
-        theme: {
-          color: '#3b82f6',
-        },
+        theme: { color: '#3b82f6' },
         handler: async function (response: any) {
-          // Payment successful
           try {
-            console.log('Payment successful, verifying...')
-            
-            // Verify payment on backend
             const verifyResponse = await fetch('/api/verify-payment', {
               method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-              },
+              headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
                 razorpay_order_id: response.razorpay_order_id,
                 razorpay_payment_id: response.razorpay_payment_id,
@@ -152,14 +140,8 @@ export function PaymentPage({
                 bundleType,
               }),
             })
-
             const verifyData = await verifyResponse.json()
-
-            console.log('Verification response:', verifyData)
-
             if (verifyData.success && verifyData.driveLinks) {
-              // Payment verified, redirect to success page with drive links
-              console.log('Payment verified! Links:', verifyData.driveLinks)
               onPaymentComplete(verifyData.driveLinks)
             } else {
               throw new Error(verifyData.error || 'Payment verification failed')
@@ -171,10 +153,10 @@ export function PaymentPage({
           }
         },
         modal: {
-          ondismiss: function() {
+          ondismiss: function () {
             setIsProcessing(false)
-          }
-        }
+          },
+        },
       }
 
       const razorpay = new window.Razorpay(options)
@@ -206,7 +188,6 @@ export function PaymentPage({
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col items-center justify-center px-3 sm:px-4 py-8 sm:py-12">
-        {/* Title */}
         <div className="text-center mb-8 sm:mb-12">
           <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground mb-2">
             Complete Payment
@@ -214,7 +195,6 @@ export function PaymentPage({
           <p className="text-sm sm:text-base text-muted-foreground">Secure payment powered by Razorpay</p>
         </div>
 
-        {/* Payment Card */}
         <div className="max-w-lg w-full">
           {/* Security Badge */}
           <div className="flex items-center justify-center gap-2 mb-4 sm:mb-6 text-xs sm:text-sm text-primary">
@@ -226,16 +206,18 @@ export function PaymentPage({
           <div className="bg-card border border-border rounded-lg p-4 sm:p-6 mb-4 sm:mb-6">
             <h2 className="text-sm font-semibold text-foreground mb-3 sm:mb-4">Order Summary</h2>
 
-            <div className="space-y-2 sm:space-y-3 mb-3 sm:mb-4 pb-3 sm:pb-4 border-b border-border">
+            <div className="space-y-2 sm:space-y-3 mb-3 sm:pb-4 border-b border-border pb-3">
               {isBundleMode && bundleType ? (
                 <>
                   <div className="flex justify-between text-xs sm:text-sm">
                     <span className="text-muted-foreground font-medium">{bundleName}</span>
                     <span className="text-muted-foreground text-xs">Class {selectedClass}</span>
                   </div>
-                  <div className="text-xs text-muted-foreground pl-2">
-                    Includes: {bundleSubjects[bundleType].join(', ')}
-                  </div>
+                  {subjects.length > 0 && (
+                    <div className="text-xs text-muted-foreground pl-2">
+                      Includes: {subjects.join(', ')}
+                    </div>
+                  )}
                 </>
               ) : (
                 <div className="flex justify-between text-xs sm:text-sm">
@@ -264,12 +246,12 @@ export function PaymentPage({
             <AlertCircle className="w-4 h-4 sm:w-5 sm:h-5 text-primary flex-shrink-0 mt-0.5" />
             <div className="text-xs sm:text-sm text-muted-foreground">
               {isBundleMode && bundleType
-                ? `After payment, you will receive ONE Google Drive link containing all ${bundleSubjects[bundleType].length} subjects on your WhatsApp.` 
+                ? `After payment, you will receive ONE Google Drive link containing all ${subjects.length} subjects on your WhatsApp.`
                 : 'After payment, you will receive the Google Drive link on WhatsApp.'}
             </div>
           </div>
 
-          {/* Payment Methods Info */}
+          {/* Payment Methods */}
           <div className="bg-card border border-border rounded-lg p-4 sm:p-6 mb-4 sm:mb-6">
             <h3 className="text-xs sm:text-sm font-semibold text-foreground mb-3 sm:mb-4">Payment Methods Accepted</h3>
             <div className="grid grid-cols-2 gap-2 sm:gap-3 text-xs">
@@ -303,7 +285,6 @@ export function PaymentPage({
             )}
           </Button>
 
-          {/* Note */}
           <p className="text-xs text-center text-muted-foreground mt-3 sm:mt-4">
             You will be redirected to Razorpay secure payment gateway
           </p>
