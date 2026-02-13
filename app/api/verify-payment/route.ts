@@ -18,6 +18,9 @@ const DRIVE_LINKS = {
   // MCQ Bundle — Class 10 & 12 share the same link
   mcq_10: 'https://drive.google.com/drive/folders/1XamwJ3cwK8pVLcAEdt8cVDieGStDMDOt?usp=sharing',
   mcq_12: 'https://drive.google.com/drive/folders/1XamwJ3cwK8pVLcAEdt8cVDieGStDMDOt?usp=sharing',
+
+  // Physical Education — Class 12 only
+  physical_education: 'https://drive.google.com/drive/folders/1fJ51taiGxHyBn5lmx-dAQRWu5GnSizQ_',
 }
 
 const BUNDLE_DISPLAY_NAMES: Record<string, string> = {
@@ -27,6 +30,7 @@ const BUNDLE_DISPLAY_NAMES: Record<string, string> = {
   pcmb: 'PCMB Bundle',
   mcq_10: 'MCQ Bundle (Class 10)',
   mcq_12: 'PCMB MCQ Bundle (Class 12)',
+  physical_education: 'Physical Education',
 }
 
 export async function POST(req: NextRequest) {

@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button'
 interface SubjectSelectionPageProps {
   selectedClass: '10' | '12'
   pageMode: 'bundle' | 'mcq'
-  onBundleSelect: (bundleType: 'science_maths' | 'pcm' | 'pcb' | 'pcmb' | 'mcq_10' | 'mcq_12') => void
+  onBundleSelect: (bundleType: 'science_maths' | 'pcm' | 'pcb' | 'pcmb' | 'mcq_10' | 'mcq_12' | 'physical_education') => void
   onBack: () => void
 }
 
@@ -50,6 +50,15 @@ const class12Bundles = [
     color: 'from-purple-500/10 to-purple-500/5',
     icon: '⭐',
   },
+  {
+    id: 'physical_education',
+    name: 'Physical Education',
+    subjects: ['Theory Notes', 'Important Questions', 'Practical Guide'],
+    price: 35,
+    badge: 'Class 12 Only',
+    color: 'from-emerald-500/10 to-teal-500/5',
+    icon: '🏃',
+  },
 ]
 
 const mcqBundles = {
@@ -58,7 +67,7 @@ const mcqBundles = {
       id: 'mcq_10',
       name: 'MCQ Bundle',
       subjects: ['Physics MCQs', 'Chemistry MCQs', 'Biology MCQs', 'Mathematics MCQs'],
-      price: 9,
+      price: 29,
       badge: 'Class 10 MCQ Practice',
       color: 'from-orange-500/10 to-yellow-500/5',
       icon: '🎯',
@@ -69,7 +78,7 @@ const mcqBundles = {
       id: 'mcq_12',
       name: 'PCMB MCQ Bundle',
       subjects: ['Physics MCQs', 'Chemistry MCQs', 'Mathematics MCQs', 'Biology MCQs'],
-      price: 14,
+      price: 39,
       badge: 'Class 12 MCQ Practice',
       color: 'from-orange-500/10 to-yellow-500/5',
       icon: '🎯',
@@ -151,6 +160,7 @@ export function SubjectSelectionPage({
                       | 'pcmb'
                       | 'mcq_10'
                       | 'mcq_12'
+                      | 'physical_education'
                   )
                 }
                 className="group relative overflow-hidden rounded-xl bg-card border-2 border-border p-6 sm:p-8 text-center transition-all hover:shadow-xl hover:border-primary active:scale-95"
@@ -205,8 +215,8 @@ export function SubjectSelectionPage({
         {/* Info */}
         <div className="mt-8 sm:mt-12 text-center text-xs sm:text-sm text-muted-foreground max-w-2xl px-4">
           {isMcqMode
-            ? 'Chapter-wise MCQ practice questions aligned with latest CBSE exam patterns'
-            : 'Each subject contains important questions and topics curated from latest exam patterns'}
+            ? 'Chapter-wise MCQ practice questions aligned with all major board exam patterns'
+            : 'Each subject contains important questions and topics curated from all major board exam patterns'}
         </div>
       </div>
     </div>

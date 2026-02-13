@@ -16,7 +16,7 @@ type PageStep =
   | 'payment'
   | 'success'
 
-type BundleType = 'science_maths' | 'pcm' | 'pcb' | 'pcmb' | 'mcq_10' | 'mcq_12'
+type BundleType = 'science_maths' | 'pcm' | 'pcb' | 'pcmb' | 'mcq_10' | 'mcq_12' | 'physical_education'
 
 interface AppState {
   currentStep: PageStep
