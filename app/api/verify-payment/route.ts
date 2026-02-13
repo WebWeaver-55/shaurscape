@@ -20,7 +20,7 @@ const DRIVE_LINKS = {
   mcq_12: 'https://drive.google.com/drive/folders/1XamwJ3cwK8pVLcAEdt8cVDieGStDMDOt?usp=sharing',
 
   // Physical Education — Class 12 only
-  physical_education: 'https://drive.google.com/drive/folders/1fJ51taiGxHyBn5lmx-dAQRWu5GnSizQ_',
+  physical_education: 'https://drive.google.com/drive/folders/1sOwXakLBg-KyP1EcqjguWBJstWTC1du4?usp=sharing',
 }
 
 const BUNDLE_DISPLAY_NAMES: Record<string, string> = {
