@@ -21,7 +21,7 @@ export function LandingPage({ onBundleClick, onMcqClick }: LandingPageProps) {
           Premium Study Materials for Class 10 &amp; 12
         </p>
         <p className="text-sm text-muted-foreground">
-          Physics · Chemistry · Maths · Biology — CBSE aligned, exam-ready
+          Physics · Chemistry · Maths · Biology — All Boards aligned, exam-ready
         </p>
       </div>
 
@@ -117,7 +117,7 @@ export function LandingPage({ onBundleClick, onMcqClick }: LandingPageProps) {
       {/* Trust Strip */}
       <div className="flex flex-wrap items-center justify-center gap-6 text-xs text-muted-foreground mb-6">
         {[
-          '✅ CBSE Curriculum Aligned',
+          '✅ All Boards Curriculum Aligned',
           '⚡ Instant Download',
           '📱 Works on Any Device',
           '🔒 Secure Payment',
