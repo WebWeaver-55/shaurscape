@@ -9,7 +9,7 @@ interface PricingPageProps {
   selectedClass: '10' | '12'
   selectedSubject: 'physics' | 'chemistry' | 'maths' | 'biology' | null
   isBundleMode: boolean
-  bundleType?: 'science_maths' | 'pcm' | 'pcb' | 'pcmb' | 'mcq_10' | 'mcq_12' | 'physical_education'
+  bundleType?: 'science_maths' | 'pcm' | 'pcb' | 'pcmb' | 'mcq_10' | 'mcq_12' | 'physical_education' | 'pe_mcq_12'
   onPhoneSubmit: (phoneNumber: string) => void
   onBack: () => void
   onPaymentClick: () => void
@@ -30,6 +30,7 @@ const bundleNames: Record<string, string> = {
   mcq_10: 'MCQ Bundle',
   mcq_12: 'PCMB MCQ Bundle',
   physical_education: 'Physical Education',
+  pe_mcq_12: 'Physical Education MCQ',
 }
 
 const bundlePrices: Record<string, number> = {
@@ -38,8 +39,9 @@ const bundlePrices: Record<string, number> = {
   pcb: 35,
   pcmb: 39,
   mcq_10: 9,
-  mcq_12: 14,
-  physical_education: 35,
+  mcq_12: 19,
+  physical_education: 45,
+  pe_mcq_12: 19,
 }
 
 const bundleSubjects: Record<string, string[]> = {
@@ -50,6 +52,7 @@ const bundleSubjects: Record<string, string[]> = {
   mcq_10: ['Physics MCQs', 'Chemistry MCQs', 'Biology MCQs', 'Mathematics MCQs'],
   mcq_12: ['Physics MCQs', 'Chemistry MCQs', 'Mathematics MCQs', 'Biology MCQs'],
   physical_education: ['Theory Notes', 'Important Questions', 'Practical Guide'],
+  pe_mcq_12: ['Chapter-wise MCQs', 'Important Questions', 'Exam Ready Practice'],
 }
 
 const bundleDescriptions: Record<string, string> = {
@@ -60,6 +63,7 @@ const bundleDescriptions: Record<string, string> = {
   mcq_10: 'Chapter-wise MCQ Practice for Class 10 PCMB',
   mcq_12: 'Chapter-wise MCQ Practice for Class 12 PCMB',
   physical_education: 'Complete Physical Education for Class 12 — All Boards',
+  pe_mcq_12: 'Physical Education MCQ Practice for Class 12 — All Boards',
 }
 
 const features = [

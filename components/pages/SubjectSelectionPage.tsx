@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button'
 interface SubjectSelectionPageProps {
   selectedClass: '10' | '12'
   pageMode: 'bundle' | 'mcq'
-  onBundleSelect: (bundleType: 'science_maths' | 'pcm' | 'pcb' | 'pcmb' | 'mcq_10' | 'mcq_12' | 'physical_education') => void
+  onBundleSelect: (bundleType: 'science_maths' | 'pcm' | 'pcb' | 'pcmb' | 'mcq_10' | 'mcq_12' | 'physical_education' | 'pe_mcq_12') => void
   onBack: () => void
 }
 
@@ -54,7 +54,7 @@ const class12Bundles = [
     id: 'physical_education',
     name: 'Physical Education',
     subjects: ['Theory Notes', 'Important Questions', 'Practical Guide'],
-    price: 35,
+    price: 45,
     badge: 'Class 12 Only',
     color: 'from-emerald-500/10 to-teal-500/5',
     icon: '🏃',
@@ -67,7 +67,7 @@ const mcqBundles = {
       id: 'mcq_10',
       name: 'MCQ Bundle',
       subjects: ['Physics MCQs', 'Chemistry MCQs', 'Biology MCQs', 'Mathematics MCQs'],
-      price: 29,
+      price: 9,
       badge: 'Class 10 MCQ Practice',
       color: 'from-orange-500/10 to-yellow-500/5',
       icon: '🎯',
@@ -78,10 +78,19 @@ const mcqBundles = {
       id: 'mcq_12',
       name: 'PCMB MCQ Bundle',
       subjects: ['Physics MCQs', 'Chemistry MCQs', 'Mathematics MCQs', 'Biology MCQs'],
-      price: 39,
+      price: 19,
       badge: 'Class 12 MCQ Practice',
       color: 'from-orange-500/10 to-yellow-500/5',
       icon: '🎯',
+    },
+    {
+      id: 'pe_mcq_12',
+      name: 'Physical Education MCQ',
+      subjects: ['Chapter-wise MCQs', 'Important Questions', 'Exam Ready Practice'],
+      price: 19,
+      badge: 'Class 12 PE MCQ',
+      color: 'from-emerald-500/10 to-teal-500/5',
+      icon: '🏃',
     },
   ],
 }
@@ -161,6 +170,7 @@ export function SubjectSelectionPage({
                       | 'mcq_10'
                       | 'mcq_12'
                       | 'physical_education'
+                      | 'pe_mcq_12'
                   )
                 }
                 className="group relative overflow-hidden rounded-xl bg-card border-2 border-border p-6 sm:p-8 text-center transition-all hover:shadow-xl hover:border-primary active:scale-95"

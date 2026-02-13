@@ -8,7 +8,7 @@ interface PaymentPageProps {
   selectedClass: '10' | '12'
   selectedSubject: 'physics' | 'chemistry' | 'maths' | 'biology' | null
   isBundleMode: boolean
-  bundleType?: 'pcm' | 'pcb' | 'pcmb' | 'science_maths' | 'mcq_10' | 'mcq_12' | 'physical_education'
+  bundleType?: 'pcm' | 'pcb' | 'pcmb' | 'science_maths' | 'mcq_10' | 'mcq_12' | 'physical_education' | 'pe_mcq_12'
   phoneNumber: string
   onPaymentComplete: (driveLinks: { [key: string]: string }) => void
   onBack: () => void
@@ -29,6 +29,7 @@ const bundleNames: Record<string, string> = {
   mcq_10: 'MCQ Bundle (Class 10)',
   mcq_12: 'PCMB MCQ Bundle (Class 12)',
   physical_education: 'Physical Education',
+  pe_mcq_12: 'Physical Education MCQ',
 }
 
 const bundlePrices: Record<string, number> = {
@@ -36,9 +37,10 @@ const bundlePrices: Record<string, number> = {
   pcm: 35,
   pcb: 35,
   pcmb: 39,
-  mcq_10: 29,
-  mcq_12: 39,
-  physical_education: 35,
+  mcq_10: 9,
+  mcq_12: 19,
+  physical_education: 45,
+  pe_mcq_12: 19,
 }
 
 const bundleSubjects: Record<string, string[]> = {
@@ -49,6 +51,7 @@ const bundleSubjects: Record<string, string[]> = {
   mcq_10: ['Physics MCQs', 'Chemistry MCQs', 'Biology MCQs', 'Mathematics MCQs'],
   mcq_12: ['Physics MCQs', 'Chemistry MCQs', 'Mathematics MCQs', 'Biology MCQs'],
   physical_education: ['Theory Notes', 'Important Questions', 'Practical Guide'],
+  pe_mcq_12: ['Chapter-wise MCQs', 'Important Questions', 'Exam Ready Practice'],
 }
 
 declare global {

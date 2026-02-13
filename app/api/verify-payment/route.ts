@@ -21,6 +21,9 @@ const DRIVE_LINKS = {
 
   // Physical Education — Class 12 only
   physical_education: 'https://drive.google.com/drive/folders/1sOwXakLBg-KyP1EcqjguWBJstWTC1du4?usp=sharing',
+
+  // Physical Education MCQ — Class 12 only
+  pe_mcq_12: 'https://drive.google.com/drive/folders/1r9xd8ALU3sy4xg_S8W9900EdYhCQXFrr?usp=sharing',
 }
 
 const BUNDLE_DISPLAY_NAMES: Record<string, string> = {
@@ -31,6 +34,7 @@ const BUNDLE_DISPLAY_NAMES: Record<string, string> = {
   mcq_10: 'MCQ Bundle (Class 10)',
   mcq_12: 'PCMB MCQ Bundle (Class 12)',
   physical_education: 'Physical Education',
+  pe_mcq_12: 'Physical Education MCQ',
 }
 
 export async function POST(req: NextRequest) {
