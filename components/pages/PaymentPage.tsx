@@ -34,9 +34,9 @@ const bundleNames: Record<string, string> = {
 
 const bundlePrices: Record<string, number> = {
   science_maths: 25,
-  pcm: 35,
-  pcb: 35,
-  pcmb: 39,
+  pcm: 45,
+  pcb: 45,
+  pcmb: 49,
   mcq_10: 9,
   mcq_12: 19,
   physical_education: 45,
