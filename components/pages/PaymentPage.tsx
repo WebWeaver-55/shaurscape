@@ -1,68 +1,44 @@
 'use client';
 
 import { ArrowLeft, Lock, AlertCircle } from 'lucide-react'
-import { Button } from '@/components/ui/button'
 import { useState, useEffect } from 'react'
+
+type BundleType = 'science_10' | 'pcm_12' | 'pcb_12' | 'pcmb_12' | 'commerce_12' | 'pe_12'
 
 interface PaymentPageProps {
   selectedClass: '10' | '12'
-  selectedSubject: 'physics' | 'chemistry' | 'maths' | 'biology' | null
+  selectedSubject: null
   isBundleMode: boolean
-  bundleType?: 'pcm' | 'pcb' | 'pcmb' | 'science_maths' | 'mcq_10' | 'mcq_12' | 'physical_education' | 'pe_mcq_12'
+  bundleType?: BundleType
   phoneNumber: string
   onPaymentComplete: (driveLinks: { [key: string]: string }) => void
   onBack: () => void
 }
 
-const subjectNames: Record<string, string> = {
-  physics: 'Physics',
-  chemistry: 'Chemistry',
-  maths: 'Mathematics',
-  biology: 'Biology',
+const bundleNames: Record<BundleType, string> = {
+  science_10: 'Science + Maths Bundle',
+  pcm_12: 'PCM Bundle (Engineering)',
+  pcb_12: 'PCB Bundle (Medical)',
+  pcmb_12: 'PCMB Bundle (Complete)',
+  commerce_12: 'Commerce Bundle',
+  pe_12: 'Physical Education Bundle',
 }
 
-const bundleNames: Record<string, string> = {
-  science_maths: 'Science + Maths Bundle',
-  pcm: 'PCM Bundle (Engineering)',
-  pcb: 'PCB Bundle (Medical)',
-  pcmb: 'PCMB Bundle (Complete)',
-  mcq_10: 'MCQ Bundle (Class 10)',
-  mcq_12: 'PCMB MCQ Bundle (Class 12)',
-  physical_education: 'Physical Education',
-  pe_mcq_12: 'Physical Education MCQ',
-}
-
-const bundlePrices: Record<string, number> = {
-  science_maths: 25,
-  pcm: 45,
-  pcb: 45,
-  pcmb: 49,
-  mcq_10: 9,
-  mcq_12: 19,
-  physical_education: 45,
-  pe_mcq_12: 19,
-}
-
-const bundleSubjects: Record<string, string[]> = {
-  science_maths: ['Science', 'Mathematics'],
-  pcm: ['Physics', 'Chemistry', 'Mathematics'],
-  pcb: ['Physics', 'Chemistry', 'Biology'],
-  pcmb: ['Physics', 'Chemistry', 'Mathematics', 'Biology'],
-  mcq_10: ['Physics MCQs', 'Chemistry MCQs', 'Biology MCQs', 'Mathematics MCQs'],
-  mcq_12: ['Physics MCQs', 'Chemistry MCQs', 'Mathematics MCQs', 'Biology MCQs'],
-  physical_education: ['Theory Notes', 'Important Questions', 'Practical Guide'],
-  pe_mcq_12: ['Chapter-wise MCQs', 'Important Questions', 'Exam Ready Practice'],
+const bundleSubjects: Record<BundleType, string[]> = {
+  science_10: ['Physics', 'Chemistry', 'Biology', 'Maths', '+ All MCQs'],
+  pcm_12: ['Physics', 'Chemistry', 'Mathematics', '+ All MCQs'],
+  pcb_12: ['Physics', 'Chemistry', 'Biology', '+ All MCQs'],
+  pcmb_12: ['Physics', 'Chemistry', 'Mathematics', 'Biology', '+ All MCQs'],
+  commerce_12: ['Accountancy', 'Business Studies', 'Economics', '+ All MCQs'],
+  pe_12: ['Theory Notes', 'Important Questions', 'MCQs', 'Practical Guide'],
 }
 
 declare global {
-  interface Window {
-    Razorpay: any;
-  }
+  interface Window { Razorpay: any }
 }
 
 export function PaymentPage({
   selectedClass,
-  selectedSubject,
   isBundleMode,
   bundleType,
   phoneNumber,
@@ -71,23 +47,18 @@ export function PaymentPage({
 }: PaymentPageProps) {
   const [isProcessing, setIsProcessing] = useState(false)
   const [scriptLoaded, setScriptLoaded] = useState(false)
-  const subjectName = selectedSubject ? subjectNames[selectedSubject] : null
-  const bundleName = bundleType ? bundleNames[bundleType] : null
-  const amount = isBundleMode && bundleType ? bundlePrices[bundleType] : 35
 
-  // Safe subjects list — never undefined
-  const subjects: string[] = (bundleType && bundleSubjects[bundleType]) ? bundleSubjects[bundleType] : []
+  const bundleName = bundleType ? bundleNames[bundleType] : 'Study Bundle'
+  const subjects: string[] = bundleType ? bundleSubjects[bundleType] : []
+  const amount = bundleType === 'science_10' ? 35 : 65
 
-  // Load Razorpay script
   useEffect(() => {
     const script = document.createElement('script')
     script.src = 'https://checkout.razorpay.com/v1/checkout.js'
     script.async = true
     script.onload = () => setScriptLoaded(true)
     document.body.appendChild(script)
-    return () => {
-      document.body.removeChild(script)
-    }
+    return () => { document.body.removeChild(script) }
   }, [])
 
   const handleRazorpayPayment = async () => {
@@ -100,14 +71,7 @@ export function PaymentPage({
       const response = await fetch('/api/create-order', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          amount,
-          phoneNumber,
-          selectedClass,
-          selectedSubject,
-          isBundleMode,
-          bundleType,
-        }),
+        body: JSON.stringify({ amount, phoneNumber, selectedClass, isBundleMode, bundleType }),
       })
       const order = await response.json()
       if (!order.id) throw new Error('Failed to create order')
@@ -117,19 +81,11 @@ export function PaymentPage({
         amount: order.amount,
         currency: 'INR',
         name: 'StudyHub',
-        description: isBundleMode
-          ? `Class ${selectedClass} - ${bundleName}`
-          : `Class ${selectedClass} - ${subjectName}`,
+        description: `Class ${selectedClass} - ${bundleName}`,
         order_id: order.id,
         prefill: { contact: phoneNumber },
-        notes: {
-          phoneNumber,
-          bundleMode: isBundleMode,
-          bundleType: bundleType || '',
-          subject: selectedSubject,
-          class: selectedClass,
-        },
-        theme: { color: '#3b82f6' },
+        notes: { phoneNumber, bundleMode: isBundleMode, bundleType: bundleType || '', class: selectedClass },
+        theme: { color: '#7c3aed' },
         handler: async function (response: any) {
           try {
             const verifyResponse = await fetch('/api/verify-payment', {
@@ -139,11 +95,7 @@ export function PaymentPage({
                 razorpay_order_id: response.razorpay_order_id,
                 razorpay_payment_id: response.razorpay_payment_id,
                 razorpay_signature: response.razorpay_signature,
-                phoneNumber,
-                selectedClass,
-                selectedSubject,
-                isBundleMode,
-                bundleType,
+                phoneNumber, selectedClass, isBundleMode, bundleType,
               }),
             })
             const verifyData = await verifyResponse.json()
@@ -153,148 +105,129 @@ export function PaymentPage({
               throw new Error(verifyData.error || 'Payment verification failed')
             }
           } catch (error) {
-            console.error('Verification error:', error)
             alert('Payment verification failed. Please contact support with your payment ID: ' + response.razorpay_payment_id)
             setIsProcessing(false)
           }
         },
-        modal: {
-          ondismiss: function () {
-            setIsProcessing(false)
-          },
-        },
+        modal: { ondismiss: () => setIsProcessing(false) },
       }
-
       const razorpay = new window.Razorpay(options)
       razorpay.open()
     } catch (error) {
-      console.error('Payment error:', error)
       alert('Failed to initiate payment. Please try again.')
       setIsProcessing(false)
     }
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-background">
-      {/* Header */}
-      <div className="border-b border-border">
-        <div className="max-w-4xl mx-auto px-3 sm:px-4 py-4 sm:py-6 flex items-center">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={onBack}
-            className="gap-2 bg-transparent h-9 sm:h-auto"
-            disabled={isProcessing}
-          >
-            <ArrowLeft className="w-4 h-4" />
-            Back
-          </Button>
-        </div>
+    <div className="min-h-screen bg-[#0a0a0f] text-white relative overflow-hidden">
+      <div className="absolute inset-0 pointer-events-none overflow-hidden">
+        <div className="absolute top-[-15%] right-[-5%] w-[400px] h-[400px] rounded-full bg-violet-600/8 blur-[90px]" />
+        <div className="absolute bottom-[-10%] left-[-5%] w-[350px] h-[350px] rounded-full bg-amber-500/6 blur-[80px]" />
       </div>
 
-      {/* Main Content */}
-      <div className="flex-1 flex flex-col items-center justify-center px-3 sm:px-4 py-8 sm:py-12">
-        <div className="text-center mb-8 sm:mb-12">
-          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground mb-2">
-            Complete Payment
-          </h1>
-          <p className="text-sm sm:text-base text-muted-foreground">Secure payment powered by Razorpay</p>
+      <div className="relative z-10 max-w-lg mx-auto px-4 sm:px-6 py-8 sm:py-12">
+        {/* Back */}
+        <button
+          onClick={onBack}
+          disabled={isProcessing}
+          className="flex items-center gap-2 text-white/40 hover:text-white/80 transition-colors text-sm mb-10 group disabled:opacity-30"
+        >
+          <ArrowLeft className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" />
+          Back
+        </button>
+
+        {/* Header */}
+        <div className="mb-8">
+          <div className="flex items-center gap-2 text-violet-400 text-sm mb-3">
+            <Lock className="w-4 h-4" />
+            <span>Secure Payment via Razorpay</span>
+          </div>
+          <h1 className="text-2xl sm:text-3xl font-black text-white">Complete Your Order</h1>
         </div>
 
-        <div className="max-w-lg w-full">
-          {/* Security Badge */}
-          <div className="flex items-center justify-center gap-2 mb-4 sm:mb-6 text-xs sm:text-sm text-primary">
-            <Lock className="w-4 h-4" />
-            <span>Secure Payment Gateway</span>
+        {/* Order summary card */}
+        <div className="rounded-2xl border border-white/10 bg-white/3 overflow-hidden mb-4">
+          <div className="bg-gradient-to-r from-violet-600/15 to-transparent border-b border-white/8 px-6 py-4">
+            <p className="text-xs text-white/40 uppercase tracking-wider mb-1">Order Summary</p>
+            <p className="font-bold text-white">{bundleName}</p>
+            <p className="text-xs text-white/40 mt-0.5">Class {selectedClass}</p>
           </div>
 
-          {/* Order Summary */}
-          <div className="bg-card border border-border rounded-lg p-4 sm:p-6 mb-4 sm:mb-6">
-            <h2 className="text-sm font-semibold text-foreground mb-3 sm:mb-4">Order Summary</h2>
-
-            <div className="space-y-2 sm:space-y-3 mb-3 sm:pb-4 border-b border-border pb-3">
-              {isBundleMode && bundleType ? (
-                <>
-                  <div className="flex justify-between text-xs sm:text-sm">
-                    <span className="text-muted-foreground font-medium">{bundleName}</span>
-                    <span className="text-muted-foreground text-xs">Class {selectedClass}</span>
-                  </div>
-                  {subjects.length > 0 && (
-                    <div className="text-xs text-muted-foreground pl-2">
-                      Includes: {subjects.join(', ')}
-                    </div>
-                  )}
-                </>
-              ) : (
-                <div className="flex justify-between text-xs sm:text-sm">
-                  <span className="text-muted-foreground">Class {selectedClass} - {subjectName}</span>
-                  <span className="font-medium text-foreground">₹35</span>
-                </div>
-              )}
-              <div className="flex justify-between text-xs sm:text-sm pt-2">
-                <span className="text-muted-foreground">Delivery Method</span>
-                <span className="font-medium text-foreground text-xs sm:text-sm">WhatsApp + Drive</span>
-              </div>
-              <div className="flex justify-between text-xs sm:text-sm">
-                <span className="text-muted-foreground">WhatsApp Number</span>
-                <span className="font-medium text-foreground">+91{phoneNumber}</span>
+          <div className="px-6 py-4 space-y-3">
+            {/* Subjects */}
+            <div>
+              <p className="text-xs text-white/30 mb-2">Includes</p>
+              <div className="flex flex-wrap gap-1.5">
+                {subjects.map((s) => (
+                  <span key={s} className="text-xs bg-white/8 border border-white/10 text-white/60 px-2.5 py-1 rounded-lg">{s}</span>
+                ))}
               </div>
             </div>
 
-            <div className="flex justify-between items-center">
-              <span className="text-sm sm:text-base font-semibold text-foreground">Total Amount</span>
-              <span className="text-xl sm:text-2xl font-bold text-primary">₹{amount}</span>
+            <div className="border-t border-white/8 pt-3 space-y-2">
+              <div className="flex justify-between text-sm">
+                <span className="text-white/40">Delivery</span>
+                <span className="text-white/70">WhatsApp + Google Drive</span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span className="text-white/40">WhatsApp</span>
+                <span className="text-white/70">+91 {phoneNumber}</span>
+              </div>
+            </div>
+
+            <div className="border-t border-white/8 pt-3 flex justify-between items-center">
+              <span className="font-bold text-white">Total</span>
+              <div className="text-right">
+                <span className="text-3xl font-black text-white">₹{amount}</span>
+                <p className="text-xs text-white/30">one-time payment</p>
+              </div>
             </div>
           </div>
+        </div>
 
-          {/* Info Box */}
-          <div className="bg-secondary/50 border border-border rounded-lg p-3 sm:p-4 mb-4 sm:mb-6 flex gap-2 sm:gap-3">
-            <AlertCircle className="w-4 h-4 sm:w-5 sm:h-5 text-primary flex-shrink-0 mt-0.5" />
-            <div className="text-xs sm:text-sm text-muted-foreground">
-              {isBundleMode && bundleType
-                ? `After payment, you will receive ONE Google Drive link containing all ${subjects.length} subjects on your WhatsApp.`
-                : 'After payment, you will receive the Google Drive link on WhatsApp.'}
-            </div>
-          </div>
-
-          {/* Payment Methods */}
-          <div className="bg-card border border-border rounded-lg p-4 sm:p-6 mb-4 sm:mb-6">
-            <h3 className="text-xs sm:text-sm font-semibold text-foreground mb-3 sm:mb-4">Payment Methods Accepted</h3>
-            <div className="grid grid-cols-2 gap-2 sm:gap-3 text-xs">
-              {['Credit Card', 'Debit Card', 'UPI', 'Net Banking'].map((method) => (
-                <div key={method} className="bg-secondary px-2 sm:px-3 py-2 rounded text-center text-muted-foreground">
-                  {method}
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* CTA Button */}
-          <Button
-            onClick={handleRazorpayPayment}
-            className="w-full gap-2 h-11 sm:h-12"
-            size="lg"
-            disabled={isProcessing || !scriptLoaded}
-          >
-            {isProcessing ? (
-              <>
-                <div className="animate-spin w-4 h-4 border-2 border-primary-foreground border-t-transparent rounded-full" />
-                Processing...
-              </>
-            ) : !scriptLoaded ? (
-              'Loading...'
-            ) : (
-              <>
-                <Lock className="w-4 h-4" />
-                Pay ₹{amount} with Razorpay
-              </>
-            )}
-          </Button>
-
-          <p className="text-xs text-center text-muted-foreground mt-3 sm:mt-4">
-            You will be redirected to Razorpay secure payment gateway
+        {/* Info */}
+        <div className="flex gap-3 bg-violet-500/8 border border-violet-500/20 rounded-xl p-4 mb-6">
+          <AlertCircle className="w-4 h-4 text-violet-400 flex-shrink-0 mt-0.5" />
+          <p className="text-xs text-white/50 leading-relaxed">
+            After payment, you'll receive <strong className="text-white/70">one Google Drive link</strong> on WhatsApp containing all materials in this bundle.
           </p>
         </div>
+
+        {/* Payment methods */}
+        <div className="rounded-2xl border border-white/8 bg-white/3 p-5 mb-6">
+          <p className="text-xs text-white/30 uppercase tracking-wider mb-3 font-bold">Accepted Payment Methods</p>
+          <div className="grid grid-cols-4 gap-2">
+            {['UPI', 'Card', 'Net Banking', 'Wallet'].map((m) => (
+              <div key={m} className="bg-white/5 border border-white/8 rounded-lg py-2 text-center text-xs text-white/50">{m}</div>
+            ))}
+          </div>
+        </div>
+
+        {/* Pay button */}
+        <button
+          onClick={handleRazorpayPayment}
+          disabled={isProcessing || !scriptLoaded}
+          className="w-full py-4 rounded-xl font-black text-base bg-gradient-to-r from-violet-600 to-blue-600 hover:from-violet-500 hover:to-blue-500 disabled:opacity-30 disabled:cursor-not-allowed transition-all hover:shadow-lg hover:shadow-violet-500/25 hover:-translate-y-0.5 active:translate-y-0 flex items-center justify-center gap-3 text-white"
+        >
+          {isProcessing ? (
+            <>
+              <div className="animate-spin w-5 h-5 border-2 border-white/30 border-t-white rounded-full" />
+              Processing...
+            </>
+          ) : !scriptLoaded ? (
+            'Loading...'
+          ) : (
+            <>
+              <Lock className="w-5 h-5" />
+              Pay ₹{amount} with Razorpay
+            </>
+          )}
+        </button>
+
+        <p className="text-center text-white/20 text-xs mt-4">
+          You'll be redirected to Razorpay's secure payment page
+        </p>
       </div>
     </div>
   )

@@ -1,215 +1,202 @@
 'use client';
 
-import { CheckCircle, Copy, Download, Home, MessageCircle, AlertCircle } from 'lucide-react'
-import { Button } from '@/components/ui/button'
+import { CheckCircle, Copy, MessageCircle, AlertCircle, Home, ExternalLink } from 'lucide-react'
 import { useState } from 'react'
 
 interface SuccessPageProps {
   driveLinks: { [key: string]: string }
   phoneNumber: string
   isBundleMode: boolean
-  bundleType?: 'science_maths' | 'pcm' | 'pcb' | 'pcmb'
+  bundleType?: string
   onStartOver: () => void
-}
-
-const bundleNames: { [key: string]: string } = {
-  science_maths: 'Science + Maths (Class 10)',
-  pcm: 'PCM Bundle (Engineering)',
-  pcb: 'PCB Bundle (Medical)',
-  pcmb: 'PCMB Bundle (Complete)',
 }
 
 export function SuccessPage({
   driveLinks,
   phoneNumber,
-  isBundleMode,
-  bundleType,
   onStartOver,
 }: SuccessPageProps) {
-  const [copied, setCopied] = useState(false)
+  const [copiedKey, setCopiedKey] = useState<string | null>(null)
 
-  const handleCopyLinks = () => {
-    const linksText = Object.entries(driveLinks)
-      .map(([subject, link]) => `${subject}: ${link}`)
-      .join('\n')
-    navigator.clipboard.writeText(linksText)
-    setCopied(true)
-    setTimeout(() => setCopied(false), 2000)
+  const entries = Object.entries(driveLinks)
+
+  const handleCopy = (key: string, link: string) => {
+    navigator.clipboard.writeText(link)
+    setCopiedKey(key)
+    setTimeout(() => setCopiedKey(null), 2000)
   }
 
   const handleSendToWhatsApp = () => {
-    let message = ''
-    const link = Object.values(driveLinks)[0]
-    const bundleName = Object.keys(driveLinks)[0]
-    
-    if (isBundleMode && bundleType) {
-      const fullBundleName = bundleNames[bundleType] || 'Bundle'
-      message = `📚 StudyHub - ${fullBundleName}\n\n📖 Your Download Link:\n${link}\n\n⚠️ IMPORTANT: This message will ONLY be shown once!\nAll data will be deleted after you close this page.\nSave this link immediately! You won't be able to access it again.`
-    } else {
-      message = `📚 StudyHub - ${bundleName}\n\nYour Download Link:\n${link}\n\n⚠️ IMPORTANT: This message will ONLY be shown once!\nAll data will be deleted after you close this page.\nSave this link immediately! You won't be able to access it again.`
-    }
-    const encoded = encodeURIComponent(message)
-    window.open(`https://wa.me/${phoneNumber}?text=${encoded}`, '_blank')
+    const lines = entries
+      .map(([name, link]) => `${name}:\n${link}`)
+      .join('\n\n')
+
+    const message =
+      `📚 StudyHub — Your Downloads\n\n` +
+      `${lines}\n\n` +
+      `⚠️ IMPORTANT: Save these links NOW!\n` +
+      `They will ONLY be shown once. After closing the page, you cannot retrieve them again.`
+
+    window.open(`https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`, '_blank')
   }
 
-  // Get the single link
-  const mainLink = Object.values(driveLinks)[0]
-  const linkName = Object.keys(driveLinks)[0]
+  const handleCopyAll = () => {
+    const text = entries.map(([name, link]) => `${name}:\n${link}`).join('\n\n')
+    navigator.clipboard.writeText(text)
+    setCopiedKey('__all__')
+    setTimeout(() => setCopiedKey(null), 2000)
+  }
+
+  // Determine if a link is MCQ or Bundle by checking the key
+  const isMcqLink = (key: string) => key.includes('MCQ') || key.includes('🎯')
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center px-3 sm:px-4 bg-background py-8 sm:py-12">
-      {/* Success Animation */}
-      <div className="mb-6 sm:mb-8">
-        <div className="relative w-16 h-16 sm:w-20 sm:h-20 mx-auto">
-          <CheckCircle className="w-16 h-16 sm:w-20 sm:h-20 text-primary animate-bounce" />
-        </div>
+    <div className="min-h-screen bg-[#0a0a0f] text-white relative overflow-hidden">
+      {/* Ambient glows */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden">
+        <div className="absolute top-[-10%] left-[50%] translate-x-[-50%] w-[600px] h-[300px] rounded-full bg-emerald-500/8 blur-[100px]" />
+        <div className="absolute bottom-[-10%] left-[-5%] w-[400px] h-[400px] rounded-full bg-violet-600/6 blur-[90px]" />
       </div>
 
-      {/* Main Content */}
-      <div className="max-w-2xl w-full text-center">
-        <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground mb-2 sm:mb-3 px-2">
-          Payment Successful!
-        </h1>
-        <p className="text-base sm:text-lg text-muted-foreground mb-6 sm:mb-8 px-2">
-          {isBundleMode && bundleType
-            ? `${bundleNames[bundleType]} - Ready for download` 
-            : 'Your study material is ready'}
-        </p>
+      <div className="relative z-10 max-w-2xl mx-auto px-4 sm:px-6 py-10 sm:py-16">
 
-        {/* Success Card */}
-        <div className="bg-card border border-border rounded-lg p-4 sm:p-6 md:p-8 mb-6 sm:mb-8">
-          {/* Status Info */}
-          <div className="space-y-4 sm:space-y-6">
-            {/* Important Warning */}
-            <div className="bg-secondary/80 border border-primary rounded-lg p-3 sm:p-4">
-              <div className="flex items-start gap-2 sm:gap-3">
-                <AlertCircle className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
-                <div className="text-left">
-                  <p className="text-sm font-bold text-primary">CRITICAL: Save This Link NOW!</p>
-                  <p className="text-xs text-muted-foreground mt-1.5 sm:mt-2">
-                    Your link will NEVER be shown again. All data will be deleted after you close this page. Save it to yourself via WhatsApp immediately, or you will lose access permanently.
-                  </p>
-                </div>
-              </div>
-            </div>
+        {/* Success header */}
+        <div className="text-center mb-10">
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-emerald-500/15 border border-emerald-500/30 mb-5">
+            <CheckCircle className="w-8 h-8 text-emerald-400" />
+          </div>
+          <h1 className="text-3xl sm:text-4xl font-black text-white mb-2">Payment Successful!</h1>
+          <p className="text-white/40 text-base">Your study materials are ready to download</p>
+        </div>
 
-            {/* Download Link Display */}
-            <div className="mt-4 sm:mt-6">
-              <div className="bg-secondary/50 border border-border rounded-lg p-3 sm:p-4">
-                <div className="space-y-3">
-                  {/* Bundle/Subject Name */}
-                  <div className="text-left">
-                    <p className="text-xs text-muted-foreground mb-2">Your Download</p>
-                    <p className="text-sm sm:text-base font-semibold text-foreground capitalize">{linkName}</p>
-                  </div>
-                  
-                  {/* Link Input with Copy Button */}
-                  <div className="flex flex-col sm:flex-row gap-2">
-                    <input
-                      type="text"
-                      value={mainLink}
-                      readOnly
-                      className="flex-1 px-3 py-2.5 sm:py-3 rounded-lg border border-border bg-secondary text-foreground text-xs sm:text-sm w-full overflow-hidden text-ellipsis"
-                    />
-                    <button
-                      onClick={() => {
-                        navigator.clipboard.writeText(mainLink);
-                        setCopied(true);
-                        setTimeout(() => setCopied(false), 2000);
-                      }}
-                      className="px-4 py-2.5 sm:py-3 rounded-lg bg-primary text-primary-foreground hover:shadow-lg transition-all active:scale-95 flex items-center justify-center gap-2 whitespace-nowrap"
-                    >
-                      <Copy className="w-4 h-4" />
-                      <span className="text-sm font-medium">
-                        {copied ? 'Copied!' : 'Copy'}
-                      </span>
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Next Steps */}
-            <div className="bg-secondary/50 border border-border rounded-lg p-3 sm:p-4 text-left">
-              <p className="text-sm font-semibold text-foreground mb-2 sm:mb-3">Next Steps:</p>
-              <ol className="text-xs sm:text-sm text-muted-foreground space-y-2">
-                <li className="flex gap-2">
-                  <span className="font-semibold text-foreground">1.</span>
-                  <span>Send the link to yourself via WhatsApp (use button below)</span>
-                </li>
-                <li className="flex gap-2">
-                  <span className="font-semibold text-foreground">2.</span>
-                  <span>Click the link to open Google Drive</span>
-                </li>
-                <li className="flex gap-2">
-                  <span className="font-semibold text-foreground">3.</span>
-                  <span>Download all study materials to your device</span>
-                </li>
-                <li className="flex gap-2">
-                  <span className="font-semibold text-foreground">4.</span>
-                  <span>Start preparing with the materials</span>
-                </li>
-              </ol>
-            </div>
+        {/* Warning banner */}
+        <div className="flex gap-3 bg-amber-500/10 border border-amber-500/25 rounded-2xl p-4 mb-6">
+          <AlertCircle className="w-5 h-5 text-amber-400 flex-shrink-0 mt-0.5" />
+          <div>
+            <p className="text-sm font-bold text-amber-300 mb-1">Save your links right now!</p>
+            <p className="text-xs text-white/40 leading-relaxed">
+              These links are shown <strong className="text-white/60">only once</strong>. Once you close this page, they cannot be retrieved. Copy them or send to WhatsApp immediately.
+            </p>
           </div>
         </div>
 
-        {/* Action Buttons */}
-        <div className="flex flex-col gap-3 sm:gap-4 mb-6 sm:mb-8 mt-6 sm:mt-8">
-          <Button
-            onClick={handleCopyLinks}
-            variant="outline"
-            className="gap-2 w-full bg-transparent h-11 sm:h-auto"
+        {/* Links cards */}
+        <div className="space-y-4 mb-6">
+          {entries.map(([name, link]) => {
+            const isMcq = isMcqLink(name)
+            return (
+              <div
+                key={name}
+                className={`rounded-2xl border p-5 ${
+                  isMcq
+                    ? 'bg-violet-500/5 border-violet-500/20'
+                    : 'bg-blue-500/5 border-blue-500/20'
+                }`}
+              >
+                {/* Label */}
+                <div className="flex items-center gap-2 mb-3">
+                  <span className={`text-xs font-bold uppercase tracking-wider px-2.5 py-1 rounded-full border ${
+                    isMcq
+                      ? 'bg-violet-500/15 text-violet-300 border-violet-500/25'
+                      : 'bg-blue-500/15 text-blue-300 border-blue-500/25'
+                  }`}>
+                    {isMcq ? '🎯 MCQ Bank' : '📚 Study Bundle'}
+                  </span>
+                </div>
+
+                {/* Name */}
+                <p className="text-sm font-semibold text-white/80 mb-3 leading-snug">{name}</p>
+
+                {/* Link row */}
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={link}
+                    readOnly
+                    className="flex-1 bg-white/5 border border-white/10 rounded-xl px-3 py-2.5 text-white/50 text-xs truncate focus:outline-none"
+                  />
+                  <button
+                    onClick={() => handleCopy(name, link)}
+                    className={`flex-shrink-0 flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-xs font-bold transition-all ${
+                      copiedKey === name
+                        ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
+                        : isMcq
+                        ? 'bg-violet-500/20 text-violet-300 border border-violet-500/30 hover:bg-violet-500/30'
+                        : 'bg-blue-500/20 text-blue-300 border border-blue-500/30 hover:bg-blue-500/30'
+                    }`}
+                  >
+                    <Copy className="w-3.5 h-3.5" />
+                    {copiedKey === name ? 'Copied!' : 'Copy'}
+                  </button>
+                  <a
+                    href={link}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={`flex-shrink-0 flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-xs font-bold border transition-all ${
+                      isMcq
+                        ? 'bg-violet-500/10 text-violet-300 border-violet-500/20 hover:bg-violet-500/20'
+                        : 'bg-blue-500/10 text-blue-300 border-blue-500/20 hover:bg-blue-500/20'
+                    }`}
+                  >
+                    <ExternalLink className="w-3.5 h-3.5" />
+                    Open
+                  </a>
+                </div>
+              </div>
+            )
+          })}
+        </div>
+
+        {/* Action buttons */}
+        <div className="space-y-3 mb-8">
+          <button
+            onClick={handleSendToWhatsApp}
+            className="w-full py-4 rounded-xl font-black text-base bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 transition-all hover:shadow-lg hover:shadow-emerald-500/20 hover:-translate-y-0.5 active:translate-y-0 flex items-center justify-center gap-2 text-white"
+          >
+            <MessageCircle className="w-5 h-5" />
+            Send Both Links to WhatsApp
+          </button>
+
+          <button
+            onClick={handleCopyAll}
+            className="w-full py-3.5 rounded-xl font-bold text-sm bg-white/5 border border-white/10 hover:bg-white/8 transition-all flex items-center justify-center gap-2 text-white/70"
           >
             <Copy className="w-4 h-4" />
-            {copied ? 'Copied!' : 'Copy Link'}
-          </Button>
-          <Button
-            onClick={handleSendToWhatsApp}
-            className="gap-2 w-full h-11 sm:h-auto"
-          >
-            <MessageCircle className="w-4 h-4" />
-            Send to WhatsApp
-          </Button>
-          <Button
+            {copiedKey === '__all__' ? '✅ All Links Copied!' : 'Copy All Links'}
+          </button>
+
+          <button
             onClick={onStartOver}
-            variant="outline"
-            className="gap-2 w-full bg-transparent h-11 sm:h-auto"
+            className="w-full py-3.5 rounded-xl font-bold text-sm bg-white/3 border border-white/8 hover:bg-white/6 transition-all flex items-center justify-center gap-2 text-white/40"
           >
             <Home className="w-4 h-4" />
-            Buy More
-          </Button>
+            Buy More Materials
+          </button>
         </div>
 
-        {/* Support Info */}
-        <div className="bg-secondary/50 border border-border rounded-lg p-4 sm:p-6 text-xs sm:text-sm text-muted-foreground">
-          <p className="mb-2 sm:mb-3">
-            <span className="font-semibold text-foreground">What to do next:</span>
-          </p>
-          <ul className="space-y-2 text-left">
-            <li className="flex gap-2">
-              <span className="text-primary font-bold">1.</span>
-              <span>Copy the link above immediately</span>
-            </li>
-            <li className="flex gap-2">
-              <span className="text-primary font-bold">2.</span>
-              <span>Send it to yourself via WhatsApp (use the button above)</span>
-            </li>
-            <li className="flex gap-2">
-              <span className="text-primary font-bold">3.</span>
-              <span>Save the message so you never lose the link</span>
-            </li>
-            <li className="flex gap-2">
-              <span className="text-primary font-bold">4.</span>
-              <span>After closing this page, the link will be permanently deleted</span>
-            </li>
-          </ul>
+        {/* Steps */}
+        <div className="rounded-2xl border border-white/8 bg-white/3 p-5">
+          <p className="text-xs text-white/40 uppercase tracking-wider font-bold mb-4">Next Steps</p>
+          <ol className="space-y-3">
+            {[
+              { step: '1', text: 'Click "Send Both Links to WhatsApp" to save them to your phone' },
+              { step: '2', text: 'Open the 📚 Study Bundle link — download important questions & notes' },
+              { step: '3', text: 'Open the 🎯 MCQ Bank link — download chapter-wise MCQ practice sheets' },
+              { step: '4', text: 'Study the notes first, then practice with MCQs for best results' },
+            ].map(({ step, text }) => (
+              <li key={step} className="flex gap-3 text-sm text-white/50">
+                <span className="w-5 h-5 rounded-full bg-white/10 text-white/70 text-xs font-bold flex items-center justify-center flex-shrink-0 mt-0.5">
+                  {step}
+                </span>
+                {text}
+              </li>
+            ))}
+          </ol>
         </div>
-      </div>
 
-      {/* Footer */}
-      <div className="mt-8 sm:mt-12 text-center text-xs text-muted-foreground px-4">
-        <p>Thank you for using StudyHub. Happy studying!</p>
+        <p className="text-center text-white/20 text-xs mt-8">
+          Thank you for using StudyHub. Happy studying! 🎓
+        </p>
       </div>
     </div>
   )

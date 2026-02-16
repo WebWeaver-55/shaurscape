@@ -10,18 +10,24 @@ import { SuccessPage } from '@/components/pages/SuccessPage'
 
 type PageStep =
   | 'landing'
-  | 'class-selection'
+  | 'stream-selection'
   | 'subject-selection'
   | 'pricing'
   | 'payment'
   | 'success'
 
-type BundleType = 'science_maths' | 'pcm' | 'pcb' | 'pcmb' | 'mcq_10' | 'mcq_12' | 'physical_education' | 'pe_mcq_12'
+export type BundleType =
+  | 'science_10'
+  | 'pcm_12'
+  | 'pcb_12'
+  | 'pcmb_12'
+  | 'commerce_12'
+  | 'pe_12'
 
 interface AppState {
   currentStep: PageStep
   selectedClass: '10' | '12' | null
-  pageMode: 'bundle' | 'mcq'
+  selectedStream: 'science' | 'commerce' | 'physical_education' | null
   bundleType?: BundleType
   phoneNumber: string | null
   driveLinks: { [key: string]: string }
@@ -31,16 +37,35 @@ export default function Home() {
   const [appState, setAppState] = useState<AppState>({
     currentStep: 'landing',
     selectedClass: null,
-    pageMode: 'bundle',
+    selectedStream: null,
     bundleType: undefined,
     phoneNumber: null,
     driveLinks: {},
   })
 
   const handleClassSelect = (classLevel: '10' | '12') => {
+    if (classLevel === '10') {
+      // Class 10 only has one stream — go straight to bundle selection
+      setAppState((prev) => ({
+        ...prev,
+        selectedClass: classLevel,
+        selectedStream: 'science',
+        currentStep: 'subject-selection',
+      }))
+    } else {
+      // Class 12 — pick stream first
+      setAppState((prev) => ({
+        ...prev,
+        selectedClass: classLevel,
+        currentStep: 'stream-selection',
+      }))
+    }
+  }
+
+  const handleStreamSelect = (stream: 'science' | 'commerce' | 'physical_education') => {
     setAppState((prev) => ({
       ...prev,
-      selectedClass: classLevel,
+      selectedStream: stream,
       currentStep: 'subject-selection',
     }))
   }
@@ -73,7 +98,7 @@ export default function Home() {
     setAppState({
       currentStep: 'landing',
       selectedClass: null,
-      pageMode: 'bundle',
+      selectedStream: null,
       bundleType: undefined,
       phoneNumber: null,
       driveLinks: {},
@@ -81,21 +106,14 @@ export default function Home() {
   }
 
   return (
-    <main className="min-h-screen bg-background">
+    <main className="min-h-screen bg-[#0a0a0f]">
       {appState.currentStep === 'landing' && (
-        <LandingPage
-          onBundleClick={() =>
-            setAppState((prev) => ({ ...prev, pageMode: 'bundle', currentStep: 'class-selection' }))
-          }
-          onMcqClick={() =>
-            setAppState((prev) => ({ ...prev, pageMode: 'mcq', currentStep: 'class-selection' }))
-          }
-        />
+        <LandingPage onClassSelect={handleClassSelect} />
       )}
 
-      {appState.currentStep === 'class-selection' && (
+      {appState.currentStep === 'stream-selection' && (
         <ClassSelectionPage
-          onSelectClass={handleClassSelect}
+          onStreamSelect={handleStreamSelect}
           onBack={() => setAppState((prev) => ({ ...prev, currentStep: 'landing' }))}
         />
       )}
@@ -103,9 +121,14 @@ export default function Home() {
       {appState.currentStep === 'subject-selection' && (
         <SubjectSelectionPage
           selectedClass={appState.selectedClass!}
-          pageMode={appState.pageMode}
+          stream={appState.selectedStream}
           onBundleSelect={handleBundleSelect}
-          onBack={() => setAppState((prev) => ({ ...prev, currentStep: 'class-selection' }))}
+          onBack={() =>
+            setAppState((prev) => ({
+              ...prev,
+              currentStep: appState.selectedClass === '10' ? 'landing' : 'stream-selection',
+            }))
+          }
         />
       )}
 

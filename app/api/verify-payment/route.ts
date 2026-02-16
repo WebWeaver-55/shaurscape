@@ -1,40 +1,43 @@
 import { NextRequest, NextResponse } from 'next/server'
 import crypto from 'crypto'
 
-// Single Google Drive link for each bundle
-const DRIVE_LINKS = {
-  // Class 10th Science + Maths - Single Link
-  science_maths: 'https://drive.google.com/drive/folders/1_sOXS7x4878MzcbX2sTJ9s2Wxymd8iHY?usp=sharing',
-
-  // PCM Bundle (Engineering) - Single Link
-  pcm: 'https://drive.google.com/drive/folders/1ke2mlyGd2GIAAQoAePAJg4M4MyaGGb8z?usp=sharing',
-
-  // PCB Bundle (Medical) - Single Link
-  pcb: 'https://drive.google.com/drive/folders/1BNNknDtnbQynURaQ0DluCFKAhZEuwF0e?usp=sharing',
-
-  // PCMB Bundle (Complete) - Single Link
-  pcmb: 'https://drive.google.com/drive/folders/11s9el_br111RWZIH5ZeELKr9bTX3Zf1H?usp=sharing',
-
-  // MCQ Bundle — Class 10 & 12 share the same link
-  mcq_10: 'https://drive.google.com/drive/folders/1XamwJ3cwK8pVLcAEdt8cVDieGStDMDOt?usp=sharing',
-  mcq_12: 'https://drive.google.com/drive/folders/1XamwJ3cwK8pVLcAEdt8cVDieGStDMDOt?usp=sharing',
-
-  // Physical Education — Class 12 only
-  physical_education: 'https://drive.google.com/drive/folders/1sOwXakLBg-KyP1EcqjguWBJstWTC1du4?usp=sharing',
-
-  // Physical Education MCQ — Class 12 only
-  pe_mcq_12: 'https://drive.google.com/drive/folders/1r9xd8ALU3sy4xg_S8W9900EdYhCQXFrr?usp=sharing',
+// ─── BUNDLE LINKS (Important Questions + Notes) ───────────────────────────────
+const BUNDLE_LINKS: Record<string, string> = {
+  science_10:  'https://drive.google.com/drive/folders/1_sOXS7x4878MzcbX2sTJ9s2Wxymd8iHY?usp=sharing',
+  pcm_12:      'https://drive.google.com/drive/folders/1ke2mlyGd2GIAAQoAePAJg4M4MyaGGb8z?usp=sharing',
+  pcb_12:      'https://drive.google.com/drive/folders/1BNNknDtnbQynURaQ0DluCFKAhZEuwF0e?usp=sharing',
+  pcmb_12:     'https://drive.google.com/drive/folders/11s9el_br111RWZIH5ZeELKr9bTX3Zf1H?usp=sharing',
+  commerce_12: 'https://drive.google.com/drive/folders/1pNzETo6rf8yxbNPozXJIAdVhER0x2OmS?usp=sharing',
+  pe_12:       'https://drive.google.com/drive/folders/1sOwXakLBg-KyP1EcqjguWBJstWTC1du4?usp=sharing',
 }
 
-const BUNDLE_DISPLAY_NAMES: Record<string, string> = {
-  science_maths: 'Science & Maths',
-  pcm: 'PCM Bundle',
-  pcb: 'PCB Bundle',
-  pcmb: 'PCMB Bundle',
-  mcq_10: 'MCQ Bundle (Class 10)',
-  mcq_12: 'PCMB MCQ Bundle (Class 12)',
-  physical_education: 'Physical Education',
-  pe_mcq_12: 'Physical Education MCQ',
+// ─── MCQ LINKS ────────────────────────────────────────────────────────────────
+const MCQ_LINKS: Record<string, string> = {
+  science_10:  'https://drive.google.com/drive/folders/1XamwJ3cwK8pVLcAEdt8cVDieGStDMDOt?usp=sharing',
+  pcm_12:      'https://drive.google.com/drive/folders/1XamwJ3cwK8pVLcAEdt8cVDieGStDMDOt?usp=sharing',
+  pcb_12:      'https://drive.google.com/drive/folders/1XamwJ3cwK8pVLcAEdt8cVDieGStDMDOt?usp=sharing',
+  pcmb_12:     'https://drive.google.com/drive/folders/1XamwJ3cwK8pVLcAEdt8cVDieGStDMDOt?usp=sharing',
+  commerce_12: 'https://drive.google.com/drive/folders/1XamwJ3cwK8pVLcAEdt8cVDieGStDMDOt?usp=sharing',
+  pe_12:       'https://drive.google.com/drive/folders/1r9xd8ALU3sy4xg_S8W9900EdYhCQXFrr?usp=sharing',
+}
+
+// ─── DISPLAY NAMES ────────────────────────────────────────────────────────────
+const BUNDLE_NAMES: Record<string, string> = {
+  science_10:  '📚 Science + Maths — Important Questions & Notes',
+  pcm_12:      '📚 PCM Bundle — Important Questions & Notes',
+  pcb_12:      '📚 PCB Bundle — Important Questions & Notes',
+  pcmb_12:     '📚 PCMB Bundle — Important Questions & Notes',
+  commerce_12: '📚 Commerce Bundle — Important Questions & Notes',
+  pe_12:       '📚 Physical Education — Important Questions & Notes',
+}
+
+const MCQ_NAMES: Record<string, string> = {
+  science_10:  '🎯 Science + Maths — MCQ Bank',
+  pcm_12:      '🎯 PCM — MCQ Bank',
+  pcb_12:      '🎯 PCB — MCQ Bank',
+  pcmb_12:     '🎯 PCMB — MCQ Bank',
+  commerce_12: '🎯 Commerce — MCQ Bank',
+  pe_12:       '🎯 Physical Education — MCQ Bank',
 }
 
 export async function POST(req: NextRequest) {
@@ -45,101 +48,47 @@ export async function POST(req: NextRequest) {
       razorpay_signature,
       phoneNumber,
       selectedClass,
-      selectedSubject,
       isBundleMode,
       bundleType,
     } = await req.json()
 
-    console.log('Payment verification request:', {
-      phoneNumber,
-      selectedClass,
-      selectedSubject,
-      isBundleMode,
-      bundleType,
-    })
+    console.log('Payment verification request:', { phoneNumber, selectedClass, isBundleMode, bundleType })
 
-    // Verify signature
     const body = razorpay_order_id + '|' + razorpay_payment_id
     const expectedSignature = crypto
       .createHmac('sha256', process.env.RAZORPAY_KEY_SECRET!)
       .update(body.toString())
       .digest('hex')
 
-    const isValid = expectedSignature === razorpay_signature
-
-    if (!isValid) {
+    if (expectedSignature !== razorpay_signature) {
       console.error('Invalid payment signature')
-      return NextResponse.json(
-        { success: false, error: 'Invalid signature' },
-        { status: 400 }
-      )
+      return NextResponse.json({ success: false, error: 'Invalid signature' }, { status: 400 })
     }
 
-    console.log('✅ Signature verified successfully')
+    console.log('✅ Signature verified')
 
-    let driveLinks: { [key: string]: string } = {}
-
-    if (isBundleMode && bundleType) {
-      console.log('Bundle mode detected with bundleType:', bundleType)
-
-      const link = DRIVE_LINKS[bundleType as keyof typeof DRIVE_LINKS]
-
-      if (!link) {
-        console.error('Invalid bundle type:', bundleType)
-        return NextResponse.json(
-          { success: false, error: 'Invalid bundle type' },
-          { status: 400 }
-        )
-      }
-
-      const linkName = BUNDLE_DISPLAY_NAMES[bundleType] ?? bundleType
-      driveLinks = { [linkName]: link }
-      console.log('✅ Bundle link generated:', linkName, '→', link)
-
-    } else if (selectedSubject) {
-      console.log('Individual subject mode:', selectedSubject)
-      const subjectLowerCase = selectedSubject.toLowerCase()
-
-      if (selectedClass === '10') {
-        driveLinks = { [selectedSubject]: DRIVE_LINKS.science_maths }
-        console.log('✅ Class 10 individual subject — using science_maths link')
-      } else if (selectedClass === '12') {
-        if (subjectLowerCase === 'biology') {
-          driveLinks = { [selectedSubject]: DRIVE_LINKS.pcb }
-          console.log('✅ Biology subject — using PCB link')
-        } else {
-          driveLinks = { [selectedSubject]: DRIVE_LINKS.pcm }
-          console.log('✅ PCM subject — using PCM link')
-        }
-      }
-
-    } else {
-      console.error('❌ Neither bundle mode nor subject specified')
-      return NextResponse.json(
-        { success: false, error: 'No subject or bundle specified' },
-        { status: 400 }
-      )
+    if (!isBundleMode || !bundleType) {
+      return NextResponse.json({ success: false, error: 'No bundle specified' }, { status: 400 })
     }
 
-    if (Object.keys(driveLinks).length === 0) {
-      console.error('❌ NO DRIVE LINKS GENERATED')
-      return NextResponse.json(
-        { success: false, error: 'Could not generate download links' },
-        { status: 500 }
-      )
+    const bundleLink = BUNDLE_LINKS[bundleType]
+    const mcqLink = MCQ_LINKS[bundleType]
+
+    if (!bundleLink || !mcqLink) {
+      console.error('Unknown bundle type:', bundleType)
+      return NextResponse.json({ success: false, error: 'Invalid bundle type' }, { status: 400 })
     }
 
-    console.log('✅ Payment verified! Generated links:', driveLinks)
+    const driveLinks: Record<string, string> = {
+      [BUNDLE_NAMES[bundleType]]: bundleLink,
+      [MCQ_NAMES[bundleType]]:    mcqLink,
+    }
 
-    // TODO: Store payment details in database
-    // TODO: Send WhatsApp message with links
+    console.log('✅ Payment verified! Returning links:', Object.keys(driveLinks))
 
     return NextResponse.json({ success: true, driveLinks })
   } catch (error) {
     console.error('❌ Error verifying payment:', error)
-    return NextResponse.json(
-      { success: false, error: 'Payment verification failed' },
-      { status: 500 }
-    )
+    return NextResponse.json({ success: false, error: 'Payment verification failed' }, { status: 500 })
   }
 }
