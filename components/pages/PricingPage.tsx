@@ -121,8 +121,8 @@ export function PricingPage({
     onPhoneSubmit(phoneNumber)
   }
 
-  const price = bundleType === 'science_10' || selectedClass === '10' ? 35 : 65
-  const originalPrice = bundleType === 'pcmb_12' ? 199 : (bundleType === 'science_10' || selectedClass === '10') ? 65 : 149
+  const price = bundleType === 'science_10' || selectedClass === '10' ? 29 : 49
+  const originalPrice = bundleType === 'pcmb_12' ? 199 : (bundleType === 'science_10' || selectedClass === '10') ? 49 : 149
   const packageName = bundleType ? bundleNames[bundleType] : 'Study Bundle'
   const packageDescription = bundleType ? bundleDescriptions[bundleType] : ''
   const subjects = bundleType ? bundleSubjects[bundleType] : []

@@ -50,7 +50,7 @@ export function PaymentPage({
 
   const bundleName = bundleType ? bundleNames[bundleType] : 'Study Bundle'
   const subjects: string[] = bundleType ? bundleSubjects[bundleType] : []
-  const amount = bundleType === 'science_10' ? 35 : 65
+  const amount = bundleType === 'science_10' ? 29 : 49
 
   useEffect(() => {
     const script = document.createElement('script')
